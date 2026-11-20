@@ -1,6 +1,6 @@
 /* ==========================================================================
    배틀룸 (games/battleroom1~3.html)
-   검은 배경 위 하얀 박스(.battle-page) 하나에 전부 배치, 데스크톱은 스크롤 없음
+   검은 배경 위 어두운 패널(.battle-page) 하나에 전부 배치, 데스크톱은 스크롤 없음
    좌: 내 포켓몬(초상화 → HP → 기술 2x2 → 벤치)
    우: 상대 포켓몬(HP → 초상화 → 배틀 로그)
    ========================================================================== */
@@ -30,8 +30,26 @@ body {
 /* style.css의 배경 몬스터볼 장식 끄기 */
 body::before { content: none; }
 
-/* ---- 하얀 박스 ---- */
+/* 오른쪽 아래 큰 몬스터볼 아이콘 (배경보다 살짝 밝게, 화면 모서리에 걸치게)
+   mask로 SVG 모양만 따고 색은 background-color로 지정 */
+body::after {
+  content: "";
+  position: fixed;
+  right: -12vmin;
+  bottom: -12vmin;
+  width: 48vmin;
+  height: 48vmin;
+  z-index: 0;
+  pointer-events: none;
+  background-color: #141414;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M14.5 12a2.5 2.5 0 0 1-5 0a2.5 2.5 0 0 1 5 0m7.5 0c0 5.52-4.48 10-10 10S2 17.52 2 12S6.48 2 12 2s10 4.48 10 10m-2 0h-4c0-2.21-1.79-4-4-4s-4 1.79-4 4H4c0 4.41 3.59 8 8 8s8-3.59 8-8'/%3E%3C/svg%3E") center / contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M14.5 12a2.5 2.5 0 0 1-5 0a2.5 2.5 0 0 1 5 0m7.5 0c0 5.52-4.48 10-10 10S2 17.52 2 12S6.48 2 12 2s10 4.48 10 10m-2 0h-4c0-2.21-1.79-4-4-4s-4 1.79-4 4H4c0 4.41 3.59 8 8 8s8-3.59 8-8'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* ---- 메인 패널: 불투명 어두운 판, 왼쪽 위 / 오른쪽 아래를 깎고 가장자리 1px 테두리 ---- */
 .battle-page {
+  --cut: 22px; /* 모서리를 깎는 크기 */
+  --line: rgba(255, 255, 255, .16); /* 테두리 색 */
   position: relative;
   display: flex;
   flex-direction: column;
@@ -39,10 +57,39 @@ body::before { content: none; }
   max-width: 98vw;
   max-height: calc(100dvh - 24px);
   padding: 18px;
-  border: 1px solid #444;
-  border-radius: 12px;
-  background: #fff;
+  border: none;
+  border-radius: 0;
+  background: #1a1a1a;
+  color: #e8e8e8;
+  clip-path: polygon(
+    var(--cut) 0, 100% 0,
+    100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%,
+    0 100%, 0 var(--cut)
+  );
+  z-index: 1; /* 배경 터미널(.bb) 위 */
   overflow: hidden;
+}
+
+/* 가장자리 1px 테두리 (깎인 대각선까지 이어지게 evenodd 링으로) */
+.battle-page::after {
+  --c2: calc(var(--cut) - .59px); /* 1px 안쪽 45° 모서리 */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--line);
+  clip-path: polygon(evenodd,
+    var(--cut) 0, 100% 0,
+    100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%,
+    0 100%, 0 var(--cut),
+    var(--cut) 0,
+    calc(1px + var(--c2)) 1px, calc(100% - 1px) 1px,
+    calc(100% - 1px) calc(100% - 1px - var(--c2)),
+    calc(100% - 1px - var(--c2)) calc(100% - 1px),
+    1px calc(100% - 1px), 1px calc(1px + var(--c2)),
+    calc(1px + var(--c2)) 1px
+  );
+  pointer-events: none;
+  z-index: 3;
 }
 
 /* ---- 위: 내 포켓몬 40% | 턴 20% | 상대 40% ---- */
@@ -157,11 +204,15 @@ body::before { content: none; }
 
 /* ---- HP 박스: [이름  HP: n / n] / [바] ---- */
 .hp-card {
+  --slant: 10px; /* 평행사변형 기울기: 윗변이 아랫변보다 오른쪽으로 밀린 거리 */
   width: 100%;
   max-width: 240px;
-  padding: 7px 14px 8px;
-  border: 1.5px solid #555;
-  border-radius: 12px;
+  padding: 7px calc(14px + var(--slant) / 2) 8px; /* 기울어진 변에 글자가 닿지 않게 */
+  border: none;
+  border-radius: 0;
+  clip-path: polygon(var(--slant) 0, 100% 0, calc(100% - var(--slant)) 100%, 0 100%);
+  background: #0a0a0a;
+  color: #fff;
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
@@ -191,22 +242,34 @@ body::before { content: none; }
   grid-row: 2;
   width: 100%;
   height: 8px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, .25);
+  --cut: 4px; /* 배경 패널처럼 왼쪽 위 / 오른쪽 아래를 깎음 */
+  border-radius: 0;
+  clip-path: polygon(
+    var(--cut) 0, 100% 0,
+    100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%,
+    0 100%, 0 var(--cut)
+  );
+  background: rgba(255, 255, 255, .2); /* 까만 박스 위에서 보이도록 */
   overflow: hidden;
 }
 
+/* 게이지 끝(오른쪽 아래)도 같은 각도로 깎아서, HP가 줄어도 끝 모양이 유지되게 */
 .hp-bar {
   height: 100%;
   width: 100%;
   background: #4caf50;
-  border-radius: 999px;
+  border-radius: 0;
+  clip-path: polygon(
+    0 0, 100% 0,
+    100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%,
+    0 100%
+  );
   transition: width .55s ease, background-color .4s ease;
 }
 
 /* ---- 중앙: 턴 / 결과 / 주사위 ---- */
-.turn-indicator { font-size: 13px; color: #555; }
-.result { font-size: 18px; font-weight: 800; color: #c2474a; }
+.turn-indicator { font-size: 13px; color: #a0a0a0; }
+.result { font-size: 18px; font-weight: 800; color: #ff5a4e; }
 
 .dice-row {
   display: flex;
@@ -215,13 +278,13 @@ body::before { content: none; }
 .dice-box { min-width: 0; }
 .dice-name {
   font-size: 12px;
-  color: #777;
+  color: #8a8a8a;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .dice-number {
-  color: #c2474a;
+  color: #ff5a4e;
   font-weight: 800;
   font-size: 1.2rem;
 }
@@ -243,15 +306,124 @@ body::before { content: none; }
 
 .my-section { grid-column: 1; min-width: 0; }
 
-#battle-log {
+/* 로그 창: 왼쪽 위 / 오른쪽 아래를 깎은 까만 터미널 패널
+   가장자리 1px 테두리 + 스캔라인 + 터미널 타이틀바 */
+.log-panel {
+  --cut: 14px; /* 모서리를 깎는 크기 */
+  --line: rgba(255, 255, 255, .32); /* 테두리/구분선 색 */
   grid-column: 3;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: #0b0b0b;
+  color: #fff;
+  clip-path: polygon(
+    var(--cut) 0, 100% 0,
+    100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%,
+    0 100%, 0 var(--cut)
+  );
+}
+
+/* 스캔라인 (CRT 느낌) */
+.log-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(to bottom, rgba(255, 255, 255, .035) 0 1px, transparent 1px 3px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* 가장자리 1px 테두리. evenodd로 가운데를 파낸 링.
+   안쪽으로 1px 들어간 45° 모서리의 깎는 길이 = cut - 1·(2-√2) ≈ cut - .59px */
+.log-panel::after {
+  --c2: calc(var(--cut) - .59px);
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--line);
+  clip-path: polygon(evenodd,
+    var(--cut) 0, 100% 0,
+    100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%,
+    0 100%, 0 var(--cut),
+    var(--cut) 0,
+    calc(1px + var(--c2)) 1px, calc(100% - 1px) 1px,
+    calc(100% - 1px) calc(100% - 1px - var(--c2)),
+    calc(100% - 1px - var(--c2)) calc(100% - 1px),
+    1px calc(100% - 1px), 1px calc(1px + var(--c2)),
+    calc(1px + var(--c2)) 1px
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* 터미널 타이틀바: [> BATTLE RECORD ............ TTY/01  ● REC] */
+.log-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px 6px 18px; /* 왼쪽 위 깎인 모서리를 피해서 */
+  background: rgba(255, 255, 255, .07);
+  border-bottom: 1px solid var(--line);
+  font-size: 11px;
+  letter-spacing: .12em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.log-head-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.log-head-title::before {
+  content: "> ";
+  opacity: .55;
+}
+
+.log-head-meta { opacity: .45; }
+
+.log-head-rec {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #ff5a5a;
+}
+.log-head-rec::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: caretBlink 1.4s steps(1) infinite;
+}
+
+#battle-log {
   height: 120px;
-  padding: 8px;
-  border: 1px solid #444;
-  border-radius: 6px;
+  padding: 6px 12px 8px;
   font-size: 14px;
   line-height: 1.5;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, .3) transparent;
+}
+
+/* 로그 캐럿: 타이핑 중엔 켜진 채, 끝나면 깜빡임 (steps로 딱딱 끊기게) */
+.log-caret {
+  display: inline-block;
+  width: .5em;
+  height: 1em;
+  margin-left: 2px;
+  vertical-align: -.12em;
+  background: #fff;
+  animation: caretBlink 1s steps(1) infinite;
+}
+.log-caret.typing { animation: none; }
+
+@keyframes caretBlink {
+  50% { opacity: 0; }
 }
 
 /* ---- 기술 버튼 2x2 (알약 모양 + 안쪽 흰 테두리) ---- */
@@ -263,15 +435,21 @@ body::before { content: none; }
 }
 
 .move-btn {
-  --type: #9fa19f; /* battle.js가 기술 타입 색으로 덮어씀 */
+  --type: #9fa19f; /* battle.js가 기술 타입 색으로 덮어씀 → 왼쪽 스틱 색 */
+  --cut: 12px; /* 왼쪽 위 / 오른쪽 아래 모서리를 깎는 크기 */
   position: relative;
   width: 150px;
   max-width: 100%;
   height: 50px;
-  padding: 0 10px;
+  padding: 0 10px 0 20px; /* 왼쪽은 스틱 자리만큼 더 띄움 */
   border: none;
-  border-radius: 999px;
-  background: var(--type);
+  border-radius: 0;
+  clip-path: polygon(
+    var(--cut) 0, 100% 0,
+    100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%,
+    0 100%, 0 var(--cut)
+  );
+  background: #0a0a0a;
   color: #fff;
   font-family: inherit;
   cursor: pointer;
@@ -280,16 +458,44 @@ body::before { content: none; }
   align-items: center;
   justify-content: center;
   line-height: 1.2;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, .45);
-  transition: filter .15s ease, transform .1s ease;
+  transition: background-color .15s ease, transform .1s ease;
 }
 
+/* 왼쪽 세로 스틱 (기술 타입 색) — 윗부분을 버튼 왼쪽 위와 같은 45°로 깎음 */
+.move-btn::before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 9px;
+  bottom: 9px;
+  width: 4px;
+  background: var(--type);
+  clip-path: polygon(0 100%, 0 4px, 100% 0, 100% 100%);
+  pointer-events: none;
+}
+
+/* 버튼 안쪽 흰 테두리 (스틱 바깥을 감쌈)
+   evenodd로 바깥 판에서 안쪽 판을 파내 2px 링을 만든다.
+   안쪽으로 d만큼 들어간 45° 모서리의 깎는 길이 = cut - d·(2-√2) */
 .move-btn::after {
+  --b: 1px;                               /* 테두리 두께 */
+  --c1: calc(var(--cut) - 1.17px);        /* 바깥 링 모서리 (inset 2px) */
+  --c2: calc(var(--c1) - 1.17px);         /* 안쪽 링 모서리 (+2px) */
   content: "";
   position: absolute;
   inset: 2px;
-  border: 2px solid #fff;
-  border-radius: inherit;
+  background: #fff;
+  clip-path: polygon(evenodd,
+    var(--c1) 0, 100% 0,
+    100% calc(100% - var(--c1)), calc(100% - var(--c1)) 100%,
+    0 100%, 0 var(--c1),
+    var(--c1) 0,
+    calc(var(--b) + var(--c2)) var(--b), calc(100% - var(--b)) var(--b),
+    calc(100% - var(--b)) calc(100% - var(--b) - var(--c2)),
+    calc(100% - var(--b) - var(--c2)) calc(100% - var(--b)),
+    var(--b) calc(100% - var(--b)), var(--b) calc(var(--b) + var(--c2)),
+    calc(var(--b) + var(--c2)) var(--b)
+  );
   pointer-events: none;
 }
 
@@ -301,24 +507,24 @@ body::before { content: none; }
   text-overflow: ellipsis;
 }
 .move-btn-name { font-size: 13px; }
-.move-btn-info { font-size: 10px; }
+.move-btn-info { font-size: 10px; opacity: .75; }
 
 .move-btn:disabled { cursor: default; }
 
 .move-btn:not(:disabled):hover {
-  filter: brightness(1.1);
+  background: #2a2a2a;
   transform: scale(1.05);
 }
 
 .move-btn:not(:disabled):active {
-  filter: brightness(.9);
+  background: #000;
   transform: scale(.97);
 }
 
-/* 유턴류 기술로 교체 대상을 고르는 중 / 이번 라운드에 고른 기술 */
+/* 유턴류 기술로 교체 대상을 고르는 중 / 이번 라운드에 고른 기술
+   (clip-path가 outline을 잘라내므로 배경색으로 표시) */
 .move-btn.uturn-picking {
-  outline: 3px solid #333;
-  outline-offset: 2px;
+  background: #3a3a3a;
 }
 
 /* ---- 벤치: 몬스터볼 위에 이름 / HP ---- */
@@ -444,8 +650,9 @@ body::before { content: none; }
     gap: 12px;
   }
 
+  .log-panel { grid-column: 2; }
+
   #battle-log {
-    grid-column: 2;
     height: auto;
     min-height: 120px;
     max-height: 200px;
@@ -473,7 +680,6 @@ body::before { content: none; }
     max-width: calc(100vw - 16px);
     max-height: none;
     padding: 10px;
-    border-radius: 10px;
   }
 
   .battle-top {
@@ -498,8 +704,7 @@ body::before { content: none; }
   }
 
   .hp-card {
-    padding: 6px 10px 7px;
-    border-radius: 10px;
+    padding: 6px calc(10px + var(--slant) / 2) 7px;
   }
 
   .stats,
@@ -511,7 +716,7 @@ body::before { content: none; }
   }
 
   .my-section,
-  #battle-log { grid-column: 1; }
+  .log-panel { grid-column: 1; }
 
   #battle-log {
     min-height: 110px;
@@ -564,9 +769,91 @@ body::before { content: none; }
 /* 터치 기기에서는 hover 확대 효과를 끄고 바로 반응 */
 @media (hover: none) {
   .move-btn:not(:disabled):hover {
-    filter: none;
+    background: #0a0a0a;
     transform: none;
   }
 
   .bench-btn:not(.active) { opacity: .55; }
+}
+
+/* ==========================================================================
+   배경 터미널 (js/battleBg.js가 body 맨 앞에 .bb를 붙임)
+   화면 왼쪽, 폭은 화면 절반보다 조금 작게. 하얀 박스 뒤에 깔림
+   ========================================================================== */
+.bb {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 46vw;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  color: #cfcfcf;
+  font-family: ui-monospace, "Cascadia Mono", Consolas, "D2Coding", monospace;
+  font-size: 11px;
+  line-height: 14px; /* battleBg.js trim()이 한 줄 14px로 계산 */
+}
+
+.bb-term {
+  position: absolute;
+  inset: 0;
+  opacity: .38; /* 배경이므로 실제 UI보다 확실히 흐리게 */
+  display: flex;
+  flex-direction: column;
+  padding: 14px 18px;
+}
+
+.bb-head {
+  flex: none;
+  white-space: pre;
+  color: #fff;
+  opacity: .9;
+  overflow: hidden;
+}
+
+/* 새 줄은 아래에서 쌓이고 오래된 줄이 위로 밀려 올라감 */
+.bb-stream {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+  white-space: pre;
+  /* 위쪽으로 갈수록 흐려지게 */
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 15%);
+          mask-image: linear-gradient(to bottom, transparent, #000 15%);
+}
+.bb-stream > div { min-height: 14px; }
+
+.bb-warn { color: #ffd166; }
+.bb-hot { color: #ff9f5a; }
+.bb-impact { color: #ff4d4d; font-weight: 700; }
+.bb-noise { color: rgba(207, 207, 207, .45); }
+
+/* 공격/피격 로그가 우르르 찍힐 때 살짝 흔들림 */
+.bb.bb-slam .bb-term { animation: bbSlam .22s ease-out; }
+@keyframes bbSlam {
+  0%   { transform: translate(0, 4px); }
+  40%  { transform: translate(-3px, -2px); }
+  100% { transform: translate(0, 0); }
+}
+
+/* 피격 순간 붉게 번쩍 */
+.bb.bb-hit::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 60, 60, .18);
+  animation: bbFlash .35s ease-out forwards;
+}
+@keyframes bbFlash {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bb.bb-slam .bb-term { animation: none; }
+  .bb.bb-hit::after { animation: none; opacity: 0; }
 }

@@ -1131,6 +1131,7 @@ export function useMove(room, myKey, moveIdx, uTurnIdx = null) {
           let dmg = 0; // 이번 기술로 준 총 데미지
           let hits = 0;
           const rolls = []; // 실제로 굴린 공격 1d10 (클라이언트가 피격 연출 전에 주사위로 보여줌)
+          let anyCrit = false; // 한 번이라도 급소에 맞았는지 (배경 터미널 연출용)
           while (hits < hitCount && newHp > 0) {
             let hitDmg;
             let isCrit = false;
@@ -1151,7 +1152,7 @@ export function useMove(room, myKey, moveIdx, uTurnIdx = null) {
             newHp = Math.max(0, newHp - hitDmg);
             dmg += hitDmg;
             hits++;
-            if (isCrit && hitDmg > 0) log.push("급소에 맞았다!");
+            if (isCrit && hitDmg > 0) { log.push("급소에 맞았다!"); anyCrit = true; }
             if (typeMult === 0) break;
           }
 
@@ -1160,6 +1161,8 @@ export function useMove(room, myKey, moveIdx, uTurnIdx = null) {
           updatedDefender = { ...updatedDefender, hp: newHp, lastHitRound: currentTurn, lastDamageTaken: dmg };
           const hitEvent = { logIndex: moveLogIndex, type: "hit", side: oppKey, hp: newHp, status: defender.status ?? null, hasAttacker: true };
           if (rolls.length > 0) hitEvent.rolls = rolls;
+          hitEvent.typeMult = typeMult;
+          if (anyCrit) hitEvent.crit = true;
           events.push(hitEvent);
 
           if (typeMult === 0) log.push(`${defenderName}에게는 효과가 없는 듯하다...`);

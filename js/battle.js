@@ -473,13 +473,23 @@ function replayClass(el, cls) {
   el.classList.add(cls);
 }
 
+// 배경 터미널(battleBg.js)에 공격/피격 로그를 쏘는 이벤트
+function emitBattleImpact(hpBefore, hpAfter, maxHp, info) {
+  const m = info.typeMult;
+  const effect = m === undefined ? "normal" : m === 0 ? "none" : m > 1 ? "super" : m < 1 ? "weak" : "normal";
+  document.dispatchEvent(new CustomEvent("battle:impact", {
+    detail: { hpBefore, hpAfter, maxHp, hidden: false, effect, crit: !!info.crit, attacker: !!info.hasAttacker },
+  }));
+}
+
 // 피격 연출: 피격자가 살짝 밀려남 → 포트레이트 3번 깜빡 → HP바 감소
-async function playHitAnimation(side, pkmn, idx) {
+async function playHitAnimation(side, pkmn, idx, info = {}) {
   const wrap = document.querySelector(`#${side}-pokemon-area .portrait-wrap`);
   const prevHp = shownPokemon[side]?.hp;
   const damaged = wrap && Number.isFinite(prevHp) && pkmn.hp < prevHp;
 
   if (damaged) {
+    emitBattleImpact(prevHp, pkmn.hp, pkmn.maxHp ?? prevHp, info);
     const page = document.querySelector(".battle-page");
     replayClass(page, "screen-shake"); // 밀려나는 순간 화면도 같이 흔들림
     replayClass(wrap, "hit-push");
@@ -508,10 +518,20 @@ function trimLogLines(el) {
   }
 }
 
+// 로그 캐럿: 항상 마지막 줄 끝에 하나만 존재. 타이핑 중엔 켜진 채로, 끝나면 다음 줄이 나올 때까지 깜빡임
+const logCaret = document.createElement("span");
+logCaret.className = "log-caret";
+
+function attachCaret(div, typing) {
+  logCaret.classList.toggle("typing", typing);
+  div.appendChild(logCaret);
+}
+
 function appendLogLineInstant(el, text) {
   const div = document.createElement("div");
   div.textContent = text;
   el.appendChild(div);
+  attachCaret(div, false);
   trimLogLines(el);
 }
 
@@ -520,17 +540,21 @@ function typeLogLine(text, onDone) {
   if (!el) { onDone(); return; }
 
   const div = document.createElement("div");
+  const textNode = document.createTextNode("");
+  div.appendChild(textNode);
   el.appendChild(div);
+  attachCaret(div, true);
 
   const chars = [...text];
   let i = 0;
   function typeNext() {
     if (i >= chars.length) {
+      attachCaret(div, false); // 타이핑 끝 → 제자리에서 깜빡
       trimLogLines(el);
       onDone();
       return;
     }
-    div.textContent += chars[i++];
+    textNode.data += chars[i++];
     el.scrollTop = el.scrollHeight;
     setTimeout(typeNext, LOG_TYPE_CHAR_MS);
   }
@@ -569,7 +593,9 @@ function processBoardQueue() {
 
   if (step.kind === "hit") {
     // 로그가 다 보인 뒤 잠깐 텀 → 밀려남 → 깜빡 3번 → HP바 감소
-    wait(HIT_DELAY_MS).then(() => playHitAnimation(step.side, step.pkmn, step.idx)).then(next);
+    // 기술 공격이면 텀 동안 배경 터미널에 공격 로그부터 띄움
+    if (step.hasAttacker) document.dispatchEvent(new CustomEvent("battle:attack"));
+    wait(HIT_DELAY_MS).then(() => playHitAnimation(step.side, step.pkmn, step.idx, step)).then(next);
     return;
   }
 
@@ -681,7 +707,7 @@ function renderLogAndBoard(room) {
         // 피격 시점의 상태이상(ev.status)을 써야, 뒤에 걸릴 상태이상이 미리 표시되지 않음
         const hitPkmn = { ...finalPkmn, hp: ev.hp };
         if ("status" in ev) hitPkmn.status = ev.status;
-        boardQueue.push({ kind: "hit", side, pkmn: hitPkmn, idx, hasAttacker: ev.hasAttacker });
+        boardQueue.push({ kind: "hit", side, pkmn: hitPkmn, idx, hasAttacker: ev.hasAttacker, typeMult: ev.typeMult, crit: ev.crit });
       } else if (ev.type === "heal") {
         boardQueue.push({ kind: "heal", side, hp: ev.hp });
       } else if (ev.type === "status") {
