@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>BLESS · 1번 방</title>
+  <meta name="theme-color" content="#0E0E0E">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/lobby.css">
+</head>
+<body class="is-loading">
+  <div class="app">
+    <main class="column lobby">
+      <header class="col-header">
+        <a class="icon-btn" href="../battle.html" aria-label="방 목록으로"><span data-icon="back"></span></a>
+        <h1 id="room-name">1번 방</h1>
+        <span class="status-pill" id="room-status"><span class="status-dot"></span><span class="status-label">불러오는 중</span></span>
+      </header>
+
+      <div class="swap-banner" id="swap-status" role="status" hidden></div>
+
+      <section class="versus" aria-label="플레이어">
+        <article id="player1" class="player-card" data-state="empty"></article>
+        <div class="versus-mark" aria-hidden="true"><span>VS</span></div>
+        <article id="player2" class="player-card" data-state="empty"></article>
+      </section>
+
+      <p class="lobby-hint" id="lobby-hint" role="status"></p>
+
+      <section class="spectators">
+        <div class="section-head">
+          <h2><span data-icon="eye"></span> 관전자 <b id="spectator-count">0</b></h2>
+        </div>
+        <ul class="spectator-list" id="spectator-list"></ul>
+      </section>
+
+      <footer class="lobby-actions">
+        <button type="button" class="btn ghost lg" id="leaveBtn"><span data-icon="logout"></span>LEAVE</button>
+        <button type="button" class="btn primary lg" id="readyBtn" aria-pressed="false" hidden>READY</button>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    const ROOM_ID = "battleroom1";
+  </script>
+  <script type="module" src="../js/battleroom.js"></script>
+</body>
+</html>

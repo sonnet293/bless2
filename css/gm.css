@@ -1,0 +1,82 @@
+/* GM 서버 페이지 (gm/index.html) — 어두운 콘솔 톤 */
+
+.gm-page {
+  max-width: 1100px; margin: 0 auto;
+  padding: 20px 16px 40px;
+  --mono: ui-monospace, "SFMono-Regular", Consolas, "D2Coding", "Liberation Mono", monospace;
+}
+
+.gm-top { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.gm-logo { width: 120px; height: auto; filter: drop-shadow(0 0 6px var(--accent-glow)); }
+.gm-tag {
+  height: 24px; padding: 0 10px; display: inline-flex; align-items: center;
+  border-radius: 999px; border: 1px solid var(--accent);
+  color: var(--accent); font-size: 11px; font-weight: 800; letter-spacing: .16em;
+}
+
+.gm-card {
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: var(--shadow);
+}
+.gm-card h3 {
+  margin: 0 0 12px; font-size: 13px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* 로그인 */
+.gm-login { max-width: 400px; margin: 8vh auto 0; display: flex; flex-direction: column; gap: 14px; }
+#gm-login[style*="block"] { display: flex !important; }
+.gm-login h2 { margin: 0; font-size: 20px; font-weight: 850; }
+.gm-sub { margin: -8px 0 4px; color: var(--muted); font-size: 14px; }
+.gm-login-msg { color: var(--danger); font-size: 14px; font-weight: 600; min-height: 1.5em; }
+
+/* 패널 (gm.js가 style.display로 전환) */
+#gm-panel { display: none; }
+.gm-panel { flex-direction: column; gap: 12px; }
+#gm-panel[style*="block"] { display: flex !important; }
+
+.gm-status { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 12px 16px; }
+.gm-live {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 12px; font-weight: 900; letter-spacing: .14em; color: var(--ok);
+}
+.gm-live i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; box-shadow: 0 0 10px currentColor; animation: gmPulse 1.4s ease-in-out infinite; }
+@keyframes gmPulse { 50% { opacity: .3; } }
+.gm-uid-wrap { color: var(--muted); font-size: 13px; display: flex; align-items: center; gap: 8px; min-width: 0; }
+#gm-uid { font-family: var(--mono); color: var(--text-2); background: var(--surface-2); padding: 2px 8px; border-radius: 6px; overflow: hidden; text-overflow: ellipsis; }
+.gm-status .btn { margin-left: auto; }
+
+.notice {
+  margin: 0; padding: 10px 14px; border-radius: 12px;
+  background: var(--accent-soft); color: var(--accent);
+  font-size: 13.5px; font-weight: 600;
+}
+
+.gm-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 12px; align-items: start; }
+@media (max-width: 860px) { .gm-grid { grid-template-columns: 1fr; } }
+
+/* 방 목록 */
+.gm-rooms { display: flex; flex-direction: column; gap: 6px; }
+.room-row {
+  padding: 10px 12px; border-radius: 10px;
+  background: var(--surface-2);
+  font-family: var(--mono); font-size: 12.5px; line-height: 1.5; color: var(--text-2);
+  border-left: 3px solid var(--accent);
+  word-break: break-all;
+}
+.gm-rooms:empty::before { content: "열린 방 없음"; color: var(--muted); font-size: 13px; }
+
+/* 처리 로그 */
+#gm-log {
+  height: 60vh; overflow-y: auto;
+  padding: 10px 12px; border-radius: 10px;
+  background: #0A0A0A; border: 1px solid var(--border);
+  font-family: var(--mono); font-size: 12.5px; line-height: 1.6;
+  color: #B8E6C4;
+}
+#gm-log > div { padding: 1px 0; border-bottom: 1px dashed rgba(255, 255, 255, .04); }
+.log-warn { color: #F3CB85; }
+.log-error { color: #FF6B6B; }

@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>BLESS 테스트</title>
+  <meta name="theme-color" content="#0E0E0E">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body class="is-loading">
+  <div class="app">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <main class="column">
+      <header class="col-header">
+        <h1>홈</h1>
+        <button class="icon-btn" id="refreshBtn" type="button" aria-label="새로고침"><span data-icon="refresh"></span></button>
+      </header>
+
+      <section id="feed" class="feed" aria-live="polite"></section>
+
+      <div class="feed-foot">
+        <button class="btn ghost" id="moreBtn" type="button" hidden>더 보기</button>
+        <p class="feed-end" id="feedEnd" hidden>모든 글을 다 봤어요</p>
+      </div>
+    </main>
+  </div>
+
+  <nav class="bottomnav" id="bottomnav" aria-label="메인 메뉴"></nav>
+
+  <!-- 오른쪽 하단 플로팅 버튼 -->
+  <div class="fabs">
+    <button class="fab fab-sub" id="composeBtn" type="button" aria-label="글쓰기"><span data-icon="feather"></span></button>
+    <button class="fab" id="mailBtn" type="button" aria-label="쪽지함">
+      <span data-icon="mail"></span>
+      <span class="badge" id="mailBadge" hidden>0</span>
+    </button>
+  </div>
+
+  <!-- 글쓰기 -->
+  <dialog id="composeDlg" class="dlg" aria-labelledby="composeTitle">
+    <form class="dlg-inner" id="composeForm" method="dialog">
+      <header class="dlg-head">
+        <button type="button" class="icon-btn" data-close aria-label="닫기"><span data-icon="x"></span></button>
+        <h2 id="composeTitle">새 글</h2>
+        <span></span>
+      </header>
+      <div class="dlg-body compose-body">
+        <img class="avatar" id="composeAvatar" alt="">
+        <textarea id="composeText" maxlength="500" rows="5" placeholder="무슨 일이 일어나고 있나요?"></textarea>
+      </div>
+      <footer class="dlg-foot">
+        <span class="counter" id="composeCount">0 / 500</span>
+        <button class="btn primary" id="composeSubmit" type="submit" disabled>게시하기</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- 쪽지함 -->
+  <dialog id="inboxDlg" class="dlg" aria-labelledby="inboxTitle">
+    <div class="dlg-inner">
+      <header class="dlg-head">
+        <button type="button" class="icon-btn" data-close aria-label="닫기"><span data-icon="x"></span></button>
+        <h2 id="inboxTitle">쪽지함</h2>
+        <span></span>
+      </header>
+      <div class="dlg-body inbox-list" id="inboxList"></div>
+    </div>
+  </dialog>
+
+  <!-- 게시글 상세 (댓글/답글) -->
+  <dialog id="detailDlg" class="dlg sheet" aria-labelledby="detailTitle">
+    <div class="dlg-inner">
+      <header class="dlg-head">
+        <button type="button" class="icon-btn" data-close aria-label="뒤로"><span data-icon="back"></span></button>
+        <h2 id="detailTitle">게시물</h2>
+        <span></span>
+      </header>
+      <div class="dlg-body detail-body">
+        <div id="detailPost"></div>
+        <div id="commentList" class="comment-list"></div>
+      </div>
+      <form class="reply-box" id="replyForm">
+        <div class="reply-to" id="replyTo"></div>
+        <div class="reply-row">
+          <img class="avatar sm" id="replyAvatar" alt="">
+          <textarea id="replyText" rows="1" maxlength="300" placeholder="답글을 남겨보세요"></textarea>
+          <button class="icon-btn primary" id="replySubmit" type="submit" aria-label="보내기" disabled><span data-icon="send"></span></button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

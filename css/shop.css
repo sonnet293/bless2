@@ -1,0 +1,88 @@
+/* 상점 */
+.wallet {
+  margin: 16px;
+  padding: 22px 22px 20px;
+  border-radius: 22px;
+  background:
+    radial-gradient(120% 160% at 100% 0%, rgba(255, 255, 255, .25), transparent 50%),
+    var(--grad);
+  color: var(--accent-ink);
+  box-shadow: 0 18px 40px -18px rgba(0, 0, 0, .35);
+}
+.wallet-label { font-size: 13px; font-weight: 700; opacity: .85; }
+.wallet-value { display: flex; align-items: baseline; gap: 8px; margin-top: 4px; }
+.wallet-value .ic { width: 26px; height: 26px; align-self: center; }
+.wallet-value b { font-size: 34px; font-weight: 900; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+.wallet-value small { font-size: 13px; font-weight: 800; letter-spacing: .1em; opacity: .9; }
+
+.shop-list { display: flex; flex-direction: column; gap: 12px; padding: 0 16px 40px; }
+
+.item {
+  --ic-bg: var(--accent-soft); --ic: var(--accent);
+  display: flex; gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  transition: box-shadow .15s, transform .15s;
+}
+.item:hover { box-shadow: var(--shadow); }
+.item-anon { --ic-bg: #EDEDEA; --ic: #444442; }
+.item-shard { --ic-bg: #E2F1FD; --ic: #1F7FD0; }
+.item-flower { --ic-bg: #FDE8F0; --ic: #D23F75; }
+
+.item-ic {
+  width: 56px; height: 56px; flex-shrink: 0;
+  display: grid; place-items: center;
+  border-radius: 18px;
+  background: var(--ic-bg); color: var(--ic);
+}
+.item-ic .ic { width: 28px; height: 28px; }
+
+.item-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.item-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.item-head h3 { margin: 0; font-size: 17px; font-weight: 850; }
+.price {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-weight: 850; font-size: 15px; white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.price .ic { width: 16px; height: 16px; color: var(--accent); }
+.price small { font-size: 10.5px; color: var(--muted); letter-spacing: .06em; }
+.item-desc { margin: 0; color: var(--text-2); font-size: 14px; }
+
+.item-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+.owned { font-size: 13.5px; color: var(--muted); }
+.owned b { color: var(--text); font-variant-numeric: tabular-nums; }
+.item-btns { display: flex; gap: 8px; }
+
+@media (max-width: 420px) {
+  .item { flex-direction: column; gap: 10px; }
+  .item-ic { width: 48px; height: 48px; border-radius: 15px; }
+  .item-btns { width: 100%; }
+  .item-btns .btn { flex: 1; }
+}
+
+/* 사용 다이얼로그 */
+.use-body { padding: 18px 16px; display: flex; flex-direction: column; gap: 18px; }
+.use-owned {
+  margin: 0; display: flex; align-items: center; gap: 6px;
+  color: var(--muted); font-size: 13px;
+}
+.use-owned .ic { width: 16px; height: 16px; }
+.use-summary { font-size: 13px; color: var(--muted); }
+.use-summary.warn { color: var(--danger); font-weight: 700; }
+
+.fee-box {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 14px 16px; border-radius: 14px;
+  background: var(--surface-2);
+  font-size: 14px;
+}
+.fee-box div { display: flex; justify-content: space-between; }
+.fee-box span { color: var(--muted); }
+.fee-box b { font-variant-numeric: tabular-nums; }
+.fee-box .total { padding-top: 8px; margin-top: 2px; border-top: 1px dashed var(--border); font-size: 15px; }
+.fee-box .total span { color: var(--text); font-weight: 700; }
+.fee-box .total b { color: var(--accent); font-size: 16px; }
+.fee-box.over .after b { color: var(--danger); }

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/battle.css">
+    <link rel="stylesheet" href="../css/intro.css">
+    <link rel="stylesheet" href="../css/select.css">
+    <title>1번 방</title>
+</head>
+<body>
+
+    <!--인트로-->
+    <div id="intro-overlay">
+        <div id="touch-prompt">아무데나 터치하여 시작</div>
+        <div id="touch-ready-status" role="status"></div>
+    </div>
+
+    <main class="battle-page">
+        <!--BGM 음량 조절-->
+        <div id="bgm-volume-control">
+            <button type="button" id="bgm-mute-btn" aria-label="음소거"></button>
+            <input type="range" id="bgm-volume" min="0" max="1" step="0.05" value="0.7" aria-label="BGM 음량" />
+            <span id="bgm-volume-label">70%</span>
+        </div>
+
+        <div class="battle-wrap" id="battle-wrapper">
+            <div class="battle-top">
+
+                <!--좌측: 내 포켓몬 영역-->
+                <div class="mine-col">
+                    <strong class="name" id="mine-name">-</strong>
+                    <div class="pokemon-panel mine" id="mine-pokemon-area">
+                        <div class="portrait-wrap">
+                            <div class="portrait-placeholder" id="mine-portrait-placeholder"></div>
+                            <img alt="" class="portrait-img" id="mine-portrait">
+                        </div>
+                        <div class="hp-card">
+                            <div class="stats" id="mine-stats"></div>
+                            <div class="hp-bar-bg"><div class="hp-bar" id="mine-hp-bar"></div></div>
+                            <span class="hp-text" id="mine-hp"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!--중앙: 턴 / 결과 / 다이스-->
+                <div class="turn-info">
+                    <div class="turn-indicator" id="turn-indicator"></div>
+                    <div class="result" id="result"></div>
+                    <div class="dice-row" id="diceRow">
+                        <div class="dice-box">
+                            <div class="dice-name" id="dice-mine-name">-</div>
+                            <div class="dice-number" id="dice-mine">-</div>
+                        </div>
+                        <div class="dice-box">
+                            <div class="dice-name" id="dice-enemy-name">-</div>
+                            <div class="dice-number" id="dice-enemy">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!--우측: 상대 포켓몬 영역-->
+                <div class="opp-col">
+                    <strong class="name" id="enemy-name"></strong>
+                    <div class="pokemon-panel oppnent" id="enemy-pokemon-area">
+                        <div class="hp-card">
+                            <div class="stats" id="enemy-stats"></div>
+                            <div class="hp-bar-bg"><div class="hp-bar" id="enemy-hp-bar"></div></div>
+                            <span class="hp-text" id="enemy-hp" style="display: none;"></span>
+                        </div>
+                        <div class="portrait-wrap">
+                            <div class="portrait-placeholder" id="enemy-portrait-placeholder"></div>
+                            <img alt="" class="portrait-img" id="enemy-portrait">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="battle-middle">
+            <div class="my-section">
+                <div id="leaveBtn" style="display: none;">LEAVE</div>
+                <div class="move-grid">
+                    <button class="move-btn" id="moveBtn0" style="display: none;"></button>
+                    <button class="move-btn" id="moveBtn1" style="display: none;"></button>
+                    <button class="move-btn" id="moveBtn2" style="display: none;"></button>
+                    <button class="move-btn" id="moveBtn3" style="display: none;"></button>
+                </div>
+                <div class="bench-list" id="mine-bench"></div>
+            </div>
+            <div id="battle-log"></div>
+        </div>
+    </main>
+
+    <script>
+        const ROOM_ID = "battleroom1";
+    </script>
+    <script type="module" src="../js/intro.js"></script>
+    <script type="module" src="../js/battle.js"></script>
+    
+</body>
+</html>

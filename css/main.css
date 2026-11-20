@@ -1,0 +1,199 @@
+/* 메인: 타임라인 · 게시글 · 상세 · 쪽지함 · 플로팅 버튼 */
+
+/* ── 게시글 카드 ───────────────────────────── */
+.post {
+  display: flex; gap: 12px;
+  padding: 14px 16px 6px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background .15s;
+  outline-offset: -2px;
+}
+.post:hover { background: color-mix(in srgb, var(--surface-2) 55%, transparent); }
+.post.full { cursor: default; padding-top: 16px; }
+.post.full:hover { background: none; }
+
+.post-avatar { flex-shrink: 0; height: fit-content; }
+.post-avatar .avatar { transition: filter .15s; }
+.post-avatar:hover .avatar { filter: brightness(.92); }
+
+.post-main { flex: 1; min-width: 0; }
+.post-head {
+  display: flex; align-items: center; gap: 4px;
+  min-width: 0; line-height: 1.3;
+  color: var(--muted); font-size: 14.5px;
+}
+.post-name {
+  color: var(--text); font-weight: 750; font-size: 15px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 45%;
+}
+.post-name:hover { text-decoration: underline; }
+.post-handle { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.post-dot { flex-shrink: 0; }
+.post-head time { white-space: nowrap; flex-shrink: 0; }
+.post-del { margin-left: auto; margin-top: -6px; margin-bottom: -6px; color: var(--muted); }
+.post-del:hover { color: var(--danger) !important; background: var(--danger-soft) !important; }
+
+.post-text { margin-top: 3px; white-space: pre-wrap; font-size: 15.5px; color: var(--text); }
+.post.full .post-text { font-size: 18px; margin-top: 10px; line-height: 1.55; }
+.post.full .post-head { font-size: 15px; }
+.post-fulltime { margin-top: 12px; padding-bottom: 10px; color: var(--muted); font-size: 14px; border-bottom: 1px solid var(--border); }
+
+.post-actions { display: flex; gap: 28px; margin: 6px 0 0 -8px; }
+.post.full .post-actions { margin-top: 4px; justify-content: space-around; margin-left: 0; }
+
+.act {
+  display: inline-flex; align-items: center; gap: 4px;
+  min-width: 52px; height: 36px; padding: 0 8px;
+  border: 0; background: none; border-radius: 999px;
+  color: var(--muted); font-size: 13.5px; font-weight: 600;
+  transition: color .15s, background .15s;
+}
+.act .ic { width: 19px; height: 19px; transition: transform .2s; }
+.act-comment:hover { color: var(--accent); }
+.act-comment:hover .ic { background: none; }
+.act-like:hover { color: var(--like); }
+.act-like.on { color: var(--like); }
+.act-like.on .ic { animation: likePop .35s cubic-bezier(.2, 1.6, .4, 1); }
+@keyframes likePop { 40% { transform: scale(1.35); } }
+.act.sm { height: 28px; min-width: 0; padding: 0 8px; font-size: 12.5px; }
+.act.sm .ic { width: 15px; height: 15px; }
+.act.sm:hover { background: var(--surface-2); color: var(--text); }
+.act.danger:hover { color: var(--danger); background: var(--danger-soft); }
+
+.feed-foot { padding: 20px 16px 40px; display: flex; justify-content: center; }
+.feed-end { margin: 0; color: var(--muted); font-size: 14px; }
+
+/* ── 플로팅 버튼 ─────────────────────────────── */
+.fabs {
+  position: fixed; z-index: 30;
+  right: max(20px, calc((100vw - var(--col) - var(--side)) / 2 - 84px));
+  bottom: calc(24px + var(--safe-b));
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+}
+.fab {
+  position: relative;
+  width: 60px; height: 60px; border-radius: 50%; border: 0;
+  display: grid; place-items: center;
+  background: var(--grad); color: var(--accent-ink);
+  box-shadow: 0 10px 24px -10px rgba(0, 0, 0, .5), 0 2px 6px rgba(0, 0, 0, .3);
+  transition: transform .15s, box-shadow .15s;
+}
+.fab .ic { width: 26px; height: 26px; }
+.fab:hover { transform: translateY(-2px); }
+.fab:active { transform: scale(.94); }
+.fab-sub {
+  width: 50px; height: 50px;
+  background: var(--surface); color: var(--accent);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+.fab-sub .ic { width: 22px; height: 22px; }
+.fab-sub:hover { background: var(--surface-3); border-color: rgba(255, 255, 255, .18); }
+
+.badge {
+  position: absolute; top: -2px; right: -2px;
+  min-width: 22px; height: 22px; padding: 0 6px;
+  display: grid; place-items: center;
+  background: #ff3b47; color: #fff;
+  border: 2.5px solid var(--bg); border-radius: 999px;
+  font-size: 11.5px; font-weight: 800; line-height: 1;
+  animation: badgeIn .3s cubic-bezier(.2, 1.6, .4, 1);
+}
+@keyframes badgeIn { from { transform: scale(0); } }
+
+@media (max-width: 1080px) {
+  .fabs { right: 20px; }
+}
+@media (max-width: 640px) {
+  .fabs { right: 16px; bottom: calc(var(--nav-h) + var(--safe-b) + 16px); gap: 12px; }
+  .fab { width: 56px; height: 56px; }
+  .fab-sub { width: 46px; height: 46px; }
+}
+
+/* ── 글쓰기 ─────────────────────────────────── */
+.compose-body { display: flex; gap: 12px; padding: 16px; }
+.compose-body textarea {
+  flex: 1; min-height: 140px;
+  background: transparent; border: 0; padding: 8px 0;
+  font-size: 18px;
+}
+.compose-body textarea:focus { background: transparent; }
+.counter { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+.counter.warn { color: var(--danger); font-weight: 700; }
+
+/* ── 상세 / 댓글 ───────────────────────────── */
+#detailDlg { width: min(640px, calc(100vw - 32px)); height: min(88dvh, 860px); }
+@media (max-width: 640px) { #detailDlg { width: 100vw; height: 100dvh; } }
+
+.comment-list { padding-bottom: 12px; }
+
+.thread { border-bottom: 1px solid var(--border); padding: 4px 0; }
+.comment { display: flex; gap: 10px; padding: 10px 16px 4px; }
+.comment-avatar { flex-shrink: 0; height: fit-content; }
+.comment-main { flex: 1; min-width: 0; }
+.comment-head {
+  display: flex; align-items: center; gap: 4px; min-width: 0;
+  color: var(--muted); font-size: 13.5px; line-height: 1.3;
+}
+.comment-head .post-name { font-size: 14px; }
+.comment-text { margin-top: 2px; white-space: pre-wrap; font-size: 15px; }
+.comment-actions { display: flex; gap: 2px; margin: 2px 0 0 -8px; }
+
+.replies { position: relative; margin-left: 33px; padding-left: 12px; }
+.replies::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 12px;
+  width: 2px; border-radius: 2px; background: var(--surface-3);
+}
+.replies .comment { padding-left: 4px; padding-top: 8px; }
+
+.reply-box {
+  flex-shrink: 0;
+  border-top: 1px solid var(--border);
+  padding: 8px 12px calc(10px + var(--safe-b));
+  background: var(--surface);
+}
+.reply-to {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 2px 4px 6px 48px; color: var(--muted); font-size: 13px;
+}
+.reply-to > span { display: inline-flex; align-items: center; gap: 4px; }
+.reply-to .ic { width: 14px; height: 14px; }
+.reply-row { display: flex; align-items: flex-end; gap: 10px; }
+.reply-row .avatar { margin-bottom: 4px; }
+.reply-row textarea {
+  flex: 1; min-height: 44px; max-height: 140px;
+  padding: 10px 14px; border-radius: 22px;
+}
+.reply-row .icon-btn { width: 44px; height: 44px; flex-shrink: 0; }
+
+/* ── 쪽지함 ─────────────────────────────────── */
+#inboxDlg { width: min(480px, calc(100vw - 32px)); }
+@media (max-width: 640px) { #inboxDlg { width: 100vw; } }
+.inbox-list { min-height: 240px; }
+
+.msg { display: flex; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--border); position: relative; }
+.msg.unread { background: color-mix(in srgb, var(--accent-soft) 60%, transparent); }
+.msg.unread::after {
+  content: ""; position: absolute; right: 16px; top: 20px;
+  width: 8px; height: 8px; border-radius: 50%; background: #ff3b47;
+}
+.msg-ic {
+  width: 42px; height: 42px; border-radius: 14px; flex-shrink: 0;
+  display: grid; place-items: center;
+  background: var(--surface-2); color: var(--accent);
+}
+.msg-ic .ic { width: 22px; height: 22px; }
+.msg.anon .msg-ic { background: #EDEDEA; color: #444442; }
+.msg.flower .msg-ic { background: #FDE8F0; color: #D23F75; }
+.msg.peace .msg-ic { background: #FBF0D9; color: #B07A00; }
+.msg-main { flex: 1; min-width: 0; padding-right: 14px; }
+.msg-head { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.msg-title { font-size: 14.5px; color: var(--text-2); }
+.msg-title b { color: var(--text); }
+.msg-head time { color: var(--muted); font-size: 12.5px; white-space: nowrap; }
+.msg-text {
+  margin: 6px 0 0; padding: 10px 12px;
+  background: var(--surface-2); border-radius: 4px 14px 14px 14px;
+  white-space: pre-wrap; font-size: 15px;
+}

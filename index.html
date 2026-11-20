@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/login.css">
+    <title>BLESS | Login</title>
+</head>
+<body class="is-loading login-page">
+    <main class="login-wrap">
+        <section class="login-card">
+            <h1 class="login-title"><img src="img/logo.svg" alt="BLESS" class="login-logo"></h1>
+
+            <form class="login-form" id="loginForm" novalidate>
+                <label class="field">
+                    <span class="field-label">Email</span>
+                    <span class="input-wrap">
+                        <span data-icon="at"></span>
+                        <input type="email" id="email" name="email" autocomplete="username" inputmode="email" required />
+                    </span>
+                </label>
+
+                <label class="field">
+                    <span class="field-label">Password</span>
+                    <span class="input-wrap">
+                        <span data-icon="lock"></span>
+                        <input type="password" id="password" name="password" autocomplete="current-password" required />
+                        <button type="button" class="icon-btn sm pw-toggle" id="pwToggle" aria-label="비밀번호 보기"><span data-icon="eye"></span></button>
+                    </span>
+                </label>
+
+                <p class="form-error" id="loginError" role="alert" hidden></p>
+
+                <button type="submit" class="btn primary block lg" id="loginBtn">
+                    <span class="btn-text">LOGIN</span>
+                </button>
+            </form>
+        </section>
+    </main>
+
+    <script type="module" src="js/login.js"></script>
+
+</body>
+</html>

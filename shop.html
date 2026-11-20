@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>UTOPIA · 상점</title>
+  <meta name="theme-color" content="#0E0E0E">
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/shop.css">
+</head>
+<body class="is-loading">
+  <div class="app">
+    <aside class="sidebar" id="sidebar"></aside>
+
+    <main class="column">
+      <header class="col-header">
+        <a class="icon-btn" href="main.html" aria-label="홈으로"><span data-icon="back"></span></a>
+        <h1><span data-icon="bag"></span> 상점</h1>
+        <span></span>
+      </header>
+
+      <section class="wallet">
+        <div class="wallet-label">내 PEACE</div>
+        <div class="wallet-value"><span data-icon="peace"></span><b id="peace">0</b><small>PEACE</small></div>
+      </section>
+
+      <section class="shop-list" id="shopList"></section>
+    </main>
+  </div>
+
+  <nav class="bottomnav" id="bottomnav" aria-label="메인 메뉴"></nav>
+
+  <!-- 아이템 사용 -->
+  <dialog id="useDlg" class="dlg" aria-labelledby="useTitle">
+    <form class="dlg-inner" id="useForm">
+      <header class="dlg-head">
+        <button type="button" class="icon-btn" data-close aria-label="닫기"><span data-icon="x"></span></button>
+        <h2 id="useTitle">아이템 사용</h2>
+        <span></span>
+      </header>
+      <div class="dlg-body use-body" id="useBody"></div>
+      <footer class="dlg-foot">
+        <span class="use-summary" id="useSummary"></span>
+        <button class="btn primary" type="submit" id="useSubmit" disabled>보내기</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <script type="module" src="js/shop.js"></script>
+</body>
+</html>

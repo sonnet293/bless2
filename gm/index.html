@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BLESS · GM 서버</title>
+  <meta name="theme-color" content="#0E0E0E">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/gm.css">
+</head>
+<body class="gm-page">
+  <header class="gm-top">
+    <img src="../img/logo.svg" alt="BLESS" class="gm-logo">
+    <span class="gm-tag">GM SERVER</span>
+  </header>
+
+  <!-- 로그인 -->
+  <section class="gm-card gm-login" id="gm-login">
+    <h2>서버 로그인</h2>
+    <p class="gm-sub">GM 계정으로만 접속할 수 있어요.</p>
+    <label class="field">
+      <span class="field-label">Email</span>
+      <span class="input-wrap"><input id="gm-email" type="email" placeholder="GM 이메일" autocomplete="username"></span>
+    </label>
+    <label class="field">
+      <span class="field-label">Password</span>
+      <span class="input-wrap"><input id="gm-password" type="password" placeholder="비밀번호" autocomplete="current-password"></span>
+    </label>
+    <button class="btn primary block lg" id="gm-login-btn" type="button">로그인</button>
+    <div class="gm-login-msg" id="gm-login-msg" role="alert"></div>
+  </section>
+
+  <!-- 서버 패널 -->
+  <section class="gm-panel" id="gm-panel">
+    <div class="gm-card gm-status">
+      <span class="gm-live"><i></i>ONLINE</span>
+      <span class="gm-uid-wrap">GM UID <code id="gm-uid"></code></span>
+      <button class="btn ghost sm" id="gm-logout-btn" type="button">로그아웃</button>
+    </div>
+    <p class="notice">이 창이 열려 있는 동안에만 게임이 진행됩니다. 별도 창으로 띄워 두세요.</p>
+
+    <div class="gm-grid">
+      <div class="gm-card">
+        <h3>방</h3>
+        <div id="gm-rooms" class="gm-rooms"></div>
+      </div>
+      <div class="gm-card gm-log-card">
+        <h3>처리 로그</h3>
+        <div id="gm-log"></div>
+      </div>
+    </div>
+  </section>
+
+  <script type="module" src="./gm.js"></script>
+</body>
+</html>
