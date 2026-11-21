@@ -178,7 +178,7 @@ export function ready() {
 }
 
 export async function logout() {
-  if (!(await confirmDialog("로그아웃할까요?", { ok: "로그아웃" }))) return;
+  if (!(await confirmDialog("로그아웃하시겠습니까?", { ok: "로그아웃" }))) return;
   await signOut(auth);
   clearUserCache();
   location.replace("index.html");

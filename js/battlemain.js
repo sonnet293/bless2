@@ -2,7 +2,7 @@
 import { db } from "./firebase.js";
 import { collection, onSnapshot }
 from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { $, icon, hydrateIcons, requireAuth, ready, getUser, renderShell } from "./common.js";
+import { $, icon, hydrateIcons, requireAuth, ready, getUser, getUsers, renderShell } from "./common.js";
 import { ROOMS, roomStatus, PLAYER_SLOTS } from "./rooms.js";
 import { fillAvatar } from "./avatar.js";
 
@@ -10,6 +10,10 @@ const grid = $("#room-grid");
 const summary = $("#room-summary");
 const cards = new Map(); // roomId -> 카드 요소
 let myUid = null;
+let lastRooms = new Map();
+// 방 문서에 이름이 비어 있을 때 공개 프로필(profiles)에서 가져온 닉네임 (uid -> 닉네임 | null)
+const profileNames = new Map();
+const nameLookups = new Set();
 
 const el = (tag, className, text) => {
     const node = document.createElement(tag);
@@ -79,9 +83,32 @@ async function init() {
     ready();
 
     onSnapshot(collection(db, "rooms"), (snap) => {
-        const rooms = new Map(snap.docs.map((d) => [d.id, d.data()]));
-        renderRooms(rooms);
+        lastRooms = new Map(snap.docs.map((d) => [d.id, d.data()]));
+        renderRooms(lastRooms);
+        fetchMissingNames(lastRooms);
     }, (err) => console.error("방 목록 구독 실패", err));
+}
+
+// 자리에 uid는 있는데 이름이 없는 플레이어는 profiles 에서 닉네임을 찾아 다시 그린다
+async function fetchMissingNames(rooms) {
+    const uids = [];
+    for (const room of rooms.values()) {
+        for (const slot of PLAYER_SLOTS) {
+            const uid = room?.[`${slot}_uid`];
+            if (uid && !room[`${slot}_name`] && !profileNames.has(uid) && !nameLookups.has(uid)) uids.push(uid);
+        }
+    }
+    if (!uids.length) return;
+    uids.forEach((uid) => nameLookups.add(uid));
+    try {
+        const users = await getUsers(uids);
+        uids.forEach((uid) => profileNames.set(uid, users[uid]?.nickname || null));
+        renderRooms(lastRooms);
+    } catch (err) {
+        console.error("플레이어 이름 불러오기 실패", err);
+    } finally {
+        uids.forEach((uid) => nameLookups.delete(uid));
+    }
 }
 
 function renderRooms(rooms) {
@@ -116,11 +143,13 @@ function renderCard(card, room, status) {
     const seats = card.querySelectorAll(".seat");
     PLAYER_SLOTS.forEach((slot, i) => {
         const seat = seats[i];
-        const name = room?.[`${slot}_name`];
-        const uid = room?.[`${slot}_uid`];
+        const uid = room?.[`${slot}_uid`] ?? null;
+        // 이름 필드가 비어 있어도 자리에 사람이 있으면 프로필 닉네임 → 기본 이름 순으로 표시
+        const name = room?.[`${slot}_name`] || (uid ? profileNames.get(uid) || `Player${i + 1}` : null);
+        const occupied = !!uid || !!name;
         const won = room?.battle_winner === `p${i + 1}`;
-        seat.dataset.empty = String(!name);
-        seat.dataset.winner = String(!!name && won);
+        seat.dataset.empty = String(!occupied);
+        seat.dataset.winner = String(occupied && won);
         seat.querySelector(".seat-name").textContent = name ?? "빈 자리";
 
         // 같은 사람이면 아바타를 다시 그리지 않음 (스냅샷마다 깜빡이지 않도록)
