@@ -7,16 +7,16 @@
   padding: 22px 22px 18px;
   border-radius: var(--radius);
   background:
-    radial-gradient(circle at 100% 0%, rgba(255, 90, 78, .35) 0%, transparent 55%),
-    #141414;
-  color: #F7F7F5;
+    radial-gradient(circle at 100% 0%, rgba(176, 154, 192, .35) 0%, transparent 55%),
+    #1F1E33;
+  color: #FFF3E2;
   display: flex; flex-direction: column; gap: 14px;
 }
 .room-hero::after {
   /* 오른쪽 아래 몬스터볼 장식 */
   content: ""; position: absolute; right: -40px; bottom: -60px;
   width: 180px; aspect-ratio: 1; opacity: .12;
-  background: #FF5A4E;
+  background: #A8BDE0;
   --ball: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M14.5 12a2.5 2.5 0 0 1-5 0a2.5 2.5 0 0 1 5 0m7.5 0c0 5.52-4.48 10-10 10S2 17.52 2 12S6.48 2 12 2s10 4.48 10 10m-2 0h-4c0-2.21-1.79-4-4-4s-4 1.79-4 4H4c0 4.41 3.59 8 8 8s8-3.59 8-8'/%3E%3C/svg%3E");
   -webkit-mask: var(--ball) center / contain no-repeat;
           mask: var(--ball) center / contain no-repeat;
@@ -24,17 +24,17 @@
   pointer-events: none;
 }
 .room-hero-kicker {
-  margin: 0 0 4px; font-size: 11px; font-weight: 800; letter-spacing: .18em; color: #FF5A4E;
+  margin: 0 0 4px; font-size: 11px; font-weight: 800; letter-spacing: .18em; color: #A8BDE0;
 }
 .room-hero-title { margin: 0; font-size: 21px; font-weight: 850; line-height: 1.3; }
-.room-hero-desc { margin: 6px 0 0; font-size: 13.5px; color: #9C9C98; max-width: 40ch; }
+.room-hero-desc { margin: 6px 0 0; font-size: 13.5px; color: #A3A1C4; max-width: 40ch; }
 
 /* ── 상태 알약 ───────────────────────────── */
 .room-summary { display: flex; flex-wrap: wrap; gap: 6px; position: relative; z-index: 1; }
 .room-summary:empty { display: none; }
 
 .status-pill {
-  --pill: #9C9C98;
+  --pill: #A3A1C4;
   display: inline-flex; align-items: center; gap: 6px;
   height: 26px; padding: 0 11px;
   border-radius: 999px;
@@ -45,9 +45,9 @@
 .status-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
 .room-hero .status-pill { background: rgba(255, 255, 255, .08); }
 
-[data-status="waiting"] .status-pill, .status-pill[data-status="waiting"] { --pill: #4FB872; }
-[data-status="playing"] .status-pill, .status-pill[data-status="playing"] { --pill: #FF5A4E; }
-[data-status="ended"] .status-pill, .status-pill[data-status="ended"] { --pill: #E0A23C; }
+[data-status="waiting"] .status-pill, .status-pill[data-status="waiting"] { --pill: #7FC8A9; }
+[data-status="playing"] .status-pill, .status-pill[data-status="playing"] { --pill: #A8BDE0; }
+[data-status="ended"] .status-pill, .status-pill[data-status="ended"] { --pill: #E9C189; }
 [data-status="playing"] .status-dot { animation: livePulse 1.2s ease-in-out infinite; }
 @keyframes livePulse { 50% { opacity: .25; } }
 
@@ -78,15 +78,15 @@
   display: flex; align-items: center; gap: 8px;
   min-height: 64px; padding: 12px 16px;
   background:
-    linear-gradient(100deg, rgba(0, 0, 0, 0) 40%, rgba(255, 90, 78, .28) 100%),
-    #161616;
-  color: #F7F7F5;
+    linear-gradient(100deg, rgba(0, 0, 0, 0) 40%, rgba(176, 154, 192, .28) 100%),
+    #222137;
+  color: #FFF3E2;
 }
 .room-card[data-status="playing"] .room-visual {
   background:
     repeating-linear-gradient(-45deg, rgba(255, 255, 255, .03) 0 10px, transparent 10px 20px),
-    linear-gradient(100deg, rgba(0, 0, 0, 0) 20%, rgba(255, 90, 78, .5) 100%),
-    #161616;
+    linear-gradient(100deg, rgba(0, 0, 0, 0) 20%, rgba(176, 154, 192, .5) 100%),
+    #222137;
 }
 .room-no {
   font-size: 30px; font-weight: 900; letter-spacing: -.02em; line-height: 1;
@@ -132,7 +132,7 @@
   position: absolute; top: -8px; right: 8px;
   padding: 1px 7px; border-radius: 999px;
   font-size: 10.5px; font-weight: 900; letter-spacing: .06em;
-  background: #4FB872; color: #fff;
+  background: #7FC8A9; color: #fff;
 }
 .seat:last-child .seat-ready { right: auto; left: 8px; }
 .seat-ready:empty { display: none; }
@@ -143,7 +143,7 @@
   width: 36px; height: 36px; flex-shrink: 0;
   border-radius: 50%; overflow: hidden;
   display: grid; place-items: center;
-  background: linear-gradient(135deg, #F59A8E, #D2302A);
+  background: linear-gradient(135deg, #FCD5CE, #B09AC0);
   color: rgba(255, 255, 255, .92);
 }
 .seat[data-empty="true"] .seat-avatar { background: var(--surface-3); color: var(--muted); }
