@@ -83,7 +83,7 @@ function buildFx() {
   const tears  = make("div", "intro-tears")
   const center = make("div", "intro-center")
   const code   = make("p", "intro-code", "ERR_0x7F3A · KERNEL PANIC")
-  const title  = make("p", "intro-title glitch", "SYSTEM ERROR")
+  const title  = make("p", "intro-title glitch", "SYSTEM SUCCESS")
   title.dataset.text = "SYSTEM ERROR"
 
   const vs     = make("div", "intro-vs")

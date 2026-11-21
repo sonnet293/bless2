@@ -92,7 +92,6 @@
   color-scheme: light;
 }
 
-
 *, *::before, *::after { box-sizing: border-box; }
 
 html { -webkit-text-size-adjust: 100%; scrollbar-gutter: stable; }
@@ -242,6 +241,7 @@ img { display: block; max-width: 100%; }
   margin: 0; font-size: 19px; font-weight: 800;
   display: flex; align-items: center; gap: 8px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  color: #000; 
 }
 .col-header h1:first-child { grid-column: 1 / 3; }
 .col-header h1 .ic { color: var(--accent); }

@@ -22,7 +22,7 @@ import {
   applyWeatherDamage,
 } from "./weather.js";
 
-const RANK_MULT_TABLE = [0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3];
+const RANK_MULT_TABLE = [0.4, 0.6, 0.8, 1, 1.2, 1.4, 1.6];
 
 export const BATTLE_RESET_FIELDS = {
   game_started: false,
