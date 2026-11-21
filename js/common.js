@@ -17,6 +17,7 @@ import {
   writeBatch,
   updateDoc,
   getCountFromServer,
+  onSnapshot,
   Timestamp,
   orderBy,
   startAt,
@@ -325,19 +326,17 @@ export function renderShell(active, me) {
 /* ───────────────────────── 알림 (댓글 · 답글) ─────────────────────────
  * notifications/{id} : { to, from, type: "comment"|"reply", postId, commentId, nickname, handle, text, createdAt, expireAt }
  * 비용 절약:
- *  - 개수는 getCountFromServer(집계) → 알림이 몇 개든 읽기 1회. 결과는 sessionStorage 에 60초 캐시해서
- *    페이지를 옮겨 다녀도 다시 읽지 않고, 탭으로 돌아왔을 때만(60초 지났으면) 다시 센다. 실시간 리스너 없음.
+ *  - 새 알림 중 맨 위 1개만 실시간 구독(limit 1) → 페이지 열 때 읽기 1회, 새 알림 올 때마다 읽기 1회.
+ *    개수는 맨 위 알림이 바뀌었을 때만 getCountFromServer(집계, 읽기 1회)로 세고 sessionStorage 에 캐시.
  *  - '읽음' 처리는 알림마다 쓰지 않고 마지막 확인 시각(notiSeenAt) 하나만 저장 (localStorage + users 문서).
  *  - 목록은 알림창을 열 때만 최대 NOTI_PAGE 개 읽고, 새 알림이 없으면 5분간 캐시를 그대로 보여준다. */
 const NOTI_PAGE = 20;
-const NOTI_CNT_TTL = 60 * 1000;
 const NOTI_LIST_TTL = 5 * 60 * 1000;
 const NOTI_SEEN_KEY = "utopia:notiSeen:";
 const NOTI_CNT_KEY = "utopia:notiCount:v1";
 const NOTI_LIST_KEY = "utopia:notiList:v1";
 let notiMe = null;
 let notiCount = 0;
-let notiBound = false;
 
 /** Firestore Timestamp · {seconds} (캐시된 JSON) · Date · number → ms */
 const toMs = (v) =>
@@ -367,33 +366,52 @@ function setNotiBadge(n) {
   });
 }
 
-async function refreshNotiCount({ force = false } = {}) {
+let notiUnsub = null;
+
+function notiError(e) {
+  console.error("[알림] 불러오지 못했어요:", e?.message || e);
+  if (String(e?.code || "").includes("failed-precondition")) {
+    console.error("[알림] Firestore 색인이 필요해요. 위 메시지의 링크를 눌러 notifications (to ↑, createdAt ↓) 색인을 만들어 주세요.");
+  }
+}
+
+/** 새 알림(확인 시각 이후) 중 가장 최근 1개만 실시간 구독 → 연결 시 읽기 1회, 새 알림 1개당 읽기 1회.
+ *  맨 위 알림이 캐시와 같으면 개수를 다시 세지 않고, 바뀌었을 때만 집계(읽기 1회)한다. */
+function watchNotiCount() {
   const uid = auth.currentUser?.uid;
   if (!uid) return;
+  notiUnsub?.();
   const seen = notiSeenAt();
-  const c = ssGet(NOTI_CNT_KEY);
-  if (!force && c?.uid === uid && c.seen === seen && Date.now() - c.t < NOTI_CNT_TTL) return setNotiBadge(c.n);
-  try {
-    const snap = await getCountFromServer(query(
-      collection(db, "notifications"),
-      where("to", "==", uid),
-      where("createdAt", ">", Timestamp.fromMillis(seen)),
-      orderBy("createdAt", "desc")
-    ));
-    const n = snap.data().count;
-    ssSet(NOTI_CNT_KEY, { uid, seen, n, t: Date.now() });
-    setNotiBadge(n);
-  } catch (e) { console.warn("noti count", e); }
+  const base = [
+    collection(db, "notifications"),
+    where("to", "==", uid),
+    where("createdAt", ">", Timestamp.fromMillis(seen)),
+    orderBy("createdAt", "desc"),
+  ];
+  notiUnsub = onSnapshot(query(...base, limit(1)), async (snap) => {
+    const top = snap.docs[0]?.id || null;
+    if (!top) {
+      ssSet(NOTI_CNT_KEY, { uid, seen, top, n: 0 });
+      return setNotiBadge(0);
+    }
+    const c = ssGet(NOTI_CNT_KEY);
+    if (c?.uid === uid && c.seen === seen && c.top === top) return setNotiBadge(c.n);
+    try {
+      const n = (await getCountFromServer(query(...base))).data().count;
+      ssSet(NOTI_CNT_KEY, { uid, seen, top, n });
+      setNotiBadge(n);
+    } catch (e) {
+      notiError(e);
+      setNotiBadge(Math.max(notiCount, 1)); // 개수를 못 세도 새 알림이 있다는 건 표시
+    }
+  }, notiError);
 }
 
 function initNotifications(me) {
   notiMe = me;
-  refreshNotiCount();
-  if (notiBound) return;
-  notiBound = true;
-  document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") refreshNotiCount();
-  });
+  const c = ssGet(NOTI_CNT_KEY); // 페이지를 옮겨도 깜빡이지 않게 직전 값을 먼저 표시
+  if (c?.uid === auth.currentUser?.uid) setNotiBadge(c.n || 0);
+  watchNotiCount();
 }
 
 const onHome = () => /(^|\/)(main\.html)?$/.test(location.pathname);
@@ -470,8 +488,8 @@ async function openNotifications() {
   if (notiCount || (items[0] && items[0].at > seen)) {
     const now = Math.max(Date.now(), items[0]?.at || 0);
     try { localStorage.setItem(NOTI_SEEN_KEY + uid, String(now)); } catch {}
-    ssSet(NOTI_CNT_KEY, { uid, seen: notiSeenAt(), n: 0, t: Date.now() });
     setNotiBadge(0);
+    watchNotiCount(); // 새 확인 시각 기준으로 다시 구독
     // 다른 기기와 맞추려고 users 문서에도 저장 (규칙에서 막혀도 이 기기는 localStorage 로 동작)
     updateDoc(doc(db, "users", uid), { notiSeenAt: Timestamp.fromMillis(now) })
       .then(() => patchCachedUser(uid, { notiSeenAt: now }))
