@@ -160,3 +160,37 @@
   .profile-meta { padding: 10px 16px 18px; }
   .entry-section { padding: 16px 12px 32px; }
 }
+
+/* 프로필 사진 크롭 */
+.dlg-crop { width: min(440px, calc(100vw - 32px)); }
+@media (max-width: 640px) { .dlg-crop { width: 100vw; } }
+.crop-body { padding: 18px 16px 10px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.crop-stage {
+  position: relative;
+  width: min(360px, calc(100vw - 48px), 52dvh);
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: #000;
+  cursor: grab;
+  touch-action: none;
+  user-select: none; -webkit-user-select: none;
+  outline: none;
+}
+.crop-stage:active { cursor: grabbing; }
+.crop-stage:focus-visible { box-shadow: 0 0 0 3px var(--accent-glow); }
+.crop-stage img {
+  position: absolute; left: 0; top: 0;
+  max-width: none; transform-origin: 0 0;
+  pointer-events: none;
+}
+.crop-mask {
+  position: absolute; inset: 0; border-radius: 50%;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, .55);
+  outline: 2px solid rgba(255, 255, 255, .85); outline-offset: -2px;
+  pointer-events: none;
+}
+.crop-zoom { display: flex; align-items: center; gap: 8px; width: min(360px, 100%); }
+.crop-zoom input { flex: 1; accent-color: var(--accent); }
+.crop-hint { margin: 0; color: var(--muted); font-size: 13px; text-align: center; }
+.dlg-crop .dlg-foot { justify-content: flex-end; }

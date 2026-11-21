@@ -2,7 +2,8 @@
 import { db } from "./firebase.js";
 import { doc, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { supabase, AVATAR_BUCKET } from "./supabase.js";
-import { avatarPath, resizeImage } from "./avatar.js";
+import { avatarPath } from "./avatar.js";
+import { cropImage } from "./cropper.js";
 import { spriteFor } from "./pokemon.js";
 import {
   $, esc, icon, hydrateIcons, requireAuth, ready, getUser, renderShell, avatarSrc,
@@ -66,10 +67,17 @@ async function onAvatarPicked(e, uid, user) {
   if (!file.type.startsWith("image/")) return toast("이미지 파일만 올릴 수 있어요", "error");
   if (file.size > 15 * 1024 * 1024) return toast("15MB 이하의 이미지를 골라주세요", "error");
 
+  let blob;
+  try {
+    blob = await cropImage(file, 400);
+  } catch (err) {
+    return toast(err?.message || "이미지를 읽을 수 없어요", "error");
+  }
+  if (!blob) return; // 크롭 취소
+
   const loading = $("#avatarLoading");
   loading.hidden = false;
   try {
-    const blob = await resizeImage(file, 400);
     const path = avatarPath(uid);
     const { error } = await supabase.storage
       .from(AVATAR_BUCKET)

@@ -1,5 +1,5 @@
 // js/avatar.js
-// 프로필 사진 관련 공통 모듈 (업로드 전처리 + 표시)
+// 프로필 사진 관련 공통 모듈 (표시) — 업로드 전 크롭은 cropper.js
 // - 업로드: Supabase 스토리지 avatars/{uid}/avatar (profile.js / supabase.js)
 // - 표시: 다른 유저의 users 문서는 규칙상 읽을 수 없으므로, uid로 공개 URL을 직접 만든다 (배틀 목록 / 대기실)
 export const SUPABASE_URL = "https://xnbegbwpqhhfbnhwjbuw.supabase.co";
@@ -56,43 +56,4 @@ export function fillAvatar(container, { uid, src, label } = {}) {
   };
   img.src = url;
   if (loaded.has(url)) show(img);
-}
-
-/* ───────────────────────── 업로드 전처리 ───────────────────────── */
-
-/** 업로드 전에 정사각형으로 자르고 줄여서 용량(=스토리지/전송 비용)을 줄인다 */
-export async function resizeImage(file, size = 400) {
-  const img = await loadImage(file);
-  const s = Math.min(img.width, img.height);
-  const sx = (img.width - s) / 2;
-  const sy = (img.height - s) / 2;
-  const out = Math.min(size, s);
-
-  const canvas = document.createElement("canvas");
-  canvas.width = canvas.height = out;
-  const ctx = canvas.getContext("2d");
-  ctx.imageSmoothingQuality = "high";
-  ctx.drawImage(img, sx, sy, s, s, 0, 0, out, out);
-
-  const blob =
-    (await toBlob(canvas, "image/webp", 0.86)) ||
-    (await toBlob(canvas, "image/jpeg", 0.88));
-  if (!blob) throw new Error("이미지를 변환하지 못했어요.");
-  return blob;
-}
-
-function loadImage(file) {
-  return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file);
-    const img = new Image();
-    img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
-    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("이미지를 읽을 수 없어요.")); };
-    img.src = url;
-  });
-}
-
-function toBlob(canvas, type, q) {
-  return new Promise((resolve) =>
-    canvas.toBlob((b) => resolve(b && b.type === type ? b : null), type, q)
-  );
 }
