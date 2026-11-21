@@ -207,6 +207,55 @@ img { display: block; max-width: 100%; }
 .nav-item.active { color: var(--text); font-weight: 800; }
 .nav-item.active .ic { color: var(--accent); stroke-width: 2.3; }
 
+/* 알림(종) 버튼 + 개수 배지 */
+.nav-ic { position: relative; display: inline-flex; }
+.nav-badge {
+  position: absolute; top: -6px; right: -9px;
+  min-width: 19px; height: 19px; padding: 0 5px;
+  display: grid; place-items: center;
+  background: #ff3b47; color: #fff;
+  border: 2px solid var(--bg); border-radius: 999px;
+  font-size: 10.5px; font-weight: 800; line-height: 1;
+  animation: navBadgeIn .3s cubic-bezier(.2, 1.6, .4, 1);
+}
+.nav-badge[hidden] { display: none; }
+@keyframes navBadgeIn { from { transform: scale(0); } }
+
+/* 알림창 */
+#notiDlg { width: min(480px, calc(100vw - 32px)); }
+@media (max-width: 640px) { #notiDlg { width: 100vw; } }
+.noti-list { min-height: 240px; }
+.noti {
+  display: flex; gap: 12px; padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  position: relative; transition: background .15s;
+}
+.noti:hover { background: var(--hover); }
+.noti.unread { background: color-mix(in srgb, var(--accent-soft) 60%, transparent); }
+.noti.unread::after {
+  content: ""; position: absolute; right: 16px; top: 20px;
+  width: 8px; height: 8px; border-radius: 50%; background: #ff3b47;
+}
+.noti-av { position: relative; flex-shrink: 0; height: 36px; }
+.noti-type {
+  position: absolute; right: -4px; bottom: -4px;
+  width: 20px; height: 20px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--accent); color: var(--accent-ink);
+  border: 2px solid var(--surface);
+}
+.noti-type.reply { background: #2E8BFF; }
+.noti-type .ic { width: 11px; height: 11px; stroke-width: 2.6; }
+.noti-main { flex: 1; min-width: 0; padding-right: 14px; display: flex; flex-direction: column; }
+.noti-head { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.noti-title { font-size: 14.5px; color: var(--text-2); }
+.noti-title b { color: var(--text); }
+.noti-head time { color: var(--muted); font-size: 12.5px; white-space: nowrap; }
+.noti-text {
+  margin-top: 4px; color: var(--muted); font-size: 14px;
+  display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+
 .side-foot { margin-top: auto; display: flex; flex-direction: column; gap: 4px; }
 
 .me-card {

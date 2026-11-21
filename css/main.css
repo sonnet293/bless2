@@ -129,7 +129,8 @@
 .comment-list { padding-bottom: 12px; }
 
 .thread { border-bottom: 1px solid var(--border); padding: 4px 0; }
-.comment { display: flex; gap: 10px; padding: 10px 16px 4px; }
+.comment { display: flex; gap: 10px; padding: 10px 16px 4px; transition: background .6s; }
+.comment.flash { background: var(--accent-soft); transition: none; }
 .comment-avatar { flex-shrink: 0; height: fit-content; }
 .comment-main { flex: 1; min-width: 0; }
 .comment-head {

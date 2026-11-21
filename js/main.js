@@ -7,6 +7,7 @@ import {
 import {
   $, esc, icon, hydrateIcons, requireAuth, ready, getUser, getUsers, renderShell, avatarHTML, avatarSrc,
   timeAgo, fullTime, toDate, formatText, toast, openDialog, wireDialog, confirmDialog, withBusy, errMsg, fmt,
+  sendNotifications,
 } from "./common.js";
 
 const PAGE = 15;
@@ -245,7 +246,7 @@ function bindCompose() {
 }
 
 /* ───────────────────────── 상세 / 댓글 / 답글 ───────────────────────── */
-async function openDetail(id, { push = true } = {}) {
+async function openDetail(id, { push = true, focus = null } = {}) {
   const p = state.posts.get(id);
   if (!p) return;
   state.detailId = id;
@@ -254,7 +255,11 @@ async function openDetail(id, { push = true } = {}) {
   openDialog(detailDlg);
   $(".detail-body", detailDlg).scrollTop = 0;
   if (push) history.pushState({ detail: id }, "", `#post-${id}`);
-  await loadComments(id);
+  // 캐시에 알림의 댓글이 없으면(새 댓글) 그때만 다시 읽음
+  const cached = state.comments.get(id);
+  const force = !!focus && !cached?.list.some((c) => c.id === focus);
+  await loadComments(id, { force });
+  if (focus && state.detailId === id) focusComment(focus);
 }
 
 async function loadComments(id, { force = false } = {}) {
@@ -415,6 +420,16 @@ function bindReply() {
         b.update(doc(db, "posts", pid), { commentCount: increment(1) });
         await b.commit();
 
+        // 알림: 답글이면 대상 댓글 작성자 · 스레드 첫 댓글 작성자에게 "reply", 글쓴이에게 "comment"
+        // (댓글 저장과 따로 보내서, 알림이 실패해도 댓글은 남는다)
+        const post = state.posts.get(pid);
+        const parent = t.parentId ? state.comments.get(pid)?.list.find((c) => c.id === t.parentId) : null;
+        const targets = new Map();
+        if (t.parentId) [t.uid, parent?.uid].forEach((u) => u && targets.set(u, "reply"));
+        if (post?.uid && !targets.has(post.uid)) targets.set(post.uid, "comment");
+        sendNotifications(targets, { postId: pid, commentId: ref.id, me: state.me, text: body })
+          .catch((err) => console.warn("notification", err));
+
         const entry = state.comments.get(pid) || { t: Date.now(), list: [] };
         entry.list.push({ ...data, id: ref.id, createdAt: new Date(), author: state.me });
         state.comments.set(pid, entry);
@@ -431,11 +446,12 @@ function bindReply() {
   });
 }
 
-/* 주소창 #post-ID 로 바로 열기 */
+/* 주소창 #post-ID 또는 #post-ID/댓글ID (알림에서 이동) 로 바로 열기 */
 async function openFromHash() {
-  const m = location.hash.match(/^#post-(.+)$/);
+  const m = location.hash.match(/^#post-([^/]+)(?:\/(.+))?$/);
   if (!m) return;
   const id = decodeURIComponent(m[1]);
+  const cid = m[2] ? decodeURIComponent(m[2]) : null;
   history.replaceState(null, "", location.pathname + location.search);
   if (!state.posts.has(id)) {
     try {
@@ -446,7 +462,16 @@ async function openFromHash() {
       state.posts.set(id, p);
     } catch (e) { return toast(errMsg(e), "error"); }
   }
-  openDetail(id);
+  await openDetail(id, { focus: cid });
+}
+
+/** 알림에서 온 댓글로 스크롤하고 잠깐 강조 */
+function focusComment(cid) {
+  const el = $(`.comment[data-cid="${CSS.escape(cid)}"]`);
+  if (!el) return toast("삭제되었거나 없는 댓글이에요", "error");
+  el.scrollIntoView({ block: "center", behavior: "smooth" });
+  el.classList.add("flash");
+  setTimeout(() => el.classList.remove("flash"), 1800);
 }
 
 /* ───────────────────────── 쪽지함 ───────────────────────── */
@@ -541,6 +566,7 @@ function bindUI() {
     if (history.state?.detail) history.back();
   });
   window.addEventListener("popstate", () => { if (detailDlg.open) detailDlg.close(); });
+  window.addEventListener("hashchange", openFromHash); // 홈에서 알림을 눌렀을 때
 
   bindCompose();
   bindReply();

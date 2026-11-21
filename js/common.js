@@ -14,6 +14,10 @@ import {
   setDoc,
   doc,
   serverTimestamp,
+  writeBatch,
+  updateDoc,
+  getCountFromServer,
+  Timestamp,
   orderBy,
   startAt,
   endAt,
@@ -103,6 +107,7 @@ const P = {
   check: '<path d="M20 6 9 17l-5-5"/>',
   chevron: '<path d="m6 9 6 6 6-6"/>',
   alert: '<circle cx="12" cy="12" r="9"/><path d="M12 8v4.5M12 16h.01"/>',
+  bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
   feather: '<path d="M20.2 12.2a6 6 0 0 0-8.5-8.5L5 10.5V19h8.5Z"/><path d="M16 8 2 22"/><path d="M17.5 15H9"/>',
 };
 const FILLED = { heartFill: "heart" };
@@ -294,12 +299,13 @@ export function renderShell(active, me) {
   ];
   const link = (it) =>
     `<a class="nav-item ${active === it.key ? "active" : ""}" href="${it.href}" aria-label="${it.label}" ${active === it.key ? 'aria-current="page"' : ""}>${icon(it.icon)}<span class="nav-label">${it.label}</span></a>`;
+  const bell = `<button class="nav-item" type="button" data-noti aria-label="알림"><span class="nav-ic">${icon("bell")}<span class="nav-badge" hidden></span></span><span class="nav-label">알림</span></button>`;
 
   const side = $("#sidebar");
   if (side) {
     side.innerHTML = `
       <a class="brand" href="main.html" aria-label="${APP_NAME} 홈"><img class="brand-logo" src="img/logo.svg" alt="${APP_NAME}"></a>
-      <nav class="side-nav">${items.map(link).join("")}</nav>
+      <nav class="side-nav">${items.map(link).join("")}${bell}</nav>
       <div class="side-foot">
         <a class="me-card" href="profile.html">
           ${avatarHTML(me, "sm")}
@@ -309,9 +315,203 @@ export function renderShell(active, me) {
       </div>`;
   }
   const bottom = $("#bottomnav");
-  if (bottom) bottom.innerHTML = items.map(link).join("");
+  if (bottom) bottom.innerHTML = items.map(link).join("") + bell;
 
   if (side) $$("[data-logout]", side).forEach((b) => b.addEventListener("click", logout));
+  $$("[data-noti]").forEach((b) => b.addEventListener("click", openNotifications));
+  initNotifications(me);
+}
+
+/* ───────────────────────── 알림 (댓글 · 답글) ─────────────────────────
+ * notifications/{id} : { to, from, type: "comment"|"reply", postId, commentId, nickname, handle, text, createdAt, expireAt }
+ * 비용 절약:
+ *  - 개수는 getCountFromServer(집계) → 알림이 몇 개든 읽기 1회. 결과는 sessionStorage 에 60초 캐시해서
+ *    페이지를 옮겨 다녀도 다시 읽지 않고, 탭으로 돌아왔을 때만(60초 지났으면) 다시 센다. 실시간 리스너 없음.
+ *  - '읽음' 처리는 알림마다 쓰지 않고 마지막 확인 시각(notiSeenAt) 하나만 저장 (localStorage + users 문서).
+ *  - 목록은 알림창을 열 때만 최대 NOTI_PAGE 개 읽고, 새 알림이 없으면 5분간 캐시를 그대로 보여준다. */
+const NOTI_PAGE = 20;
+const NOTI_CNT_TTL = 60 * 1000;
+const NOTI_LIST_TTL = 5 * 60 * 1000;
+const NOTI_SEEN_KEY = "utopia:notiSeen:";
+const NOTI_CNT_KEY = "utopia:notiCount:v1";
+const NOTI_LIST_KEY = "utopia:notiList:v1";
+let notiMe = null;
+let notiCount = 0;
+let notiBound = false;
+
+/** Firestore Timestamp · {seconds} (캐시된 JSON) · Date · number → ms */
+const toMs = (v) =>
+  v == null ? 0
+    : typeof v === "number" ? v
+    : v.toMillis ? v.toMillis()
+    : v.seconds != null ? v.seconds * 1000
+    : toDate(v).getTime();
+
+const ssGet = (k) => { try { return JSON.parse(sessionStorage.getItem(k)); } catch { return null; } };
+const ssSet = (k, v) => { try { sessionStorage.setItem(k, JSON.stringify(v)); } catch {} };
+
+function notiSeenAt() {
+  const uid = auth.currentUser?.uid;
+  let local = 0;
+  try { local = Number(localStorage.getItem(NOTI_SEEN_KEY + uid)) || 0; } catch {}
+  return Math.max(local, toMs(notiMe?.notiSeenAt));
+}
+
+function setNotiBadge(n) {
+  notiCount = n;
+  $$("[data-noti]").forEach((b) => {
+    const badge = $(".nav-badge", b);
+    badge.hidden = !n;
+    badge.textContent = n > 99 ? "99+" : String(n);
+    b.setAttribute("aria-label", n ? `알림 (새 알림 ${n}개)` : "알림");
+  });
+}
+
+async function refreshNotiCount({ force = false } = {}) {
+  const uid = auth.currentUser?.uid;
+  if (!uid) return;
+  const seen = notiSeenAt();
+  const c = ssGet(NOTI_CNT_KEY);
+  if (!force && c?.uid === uid && c.seen === seen && Date.now() - c.t < NOTI_CNT_TTL) return setNotiBadge(c.n);
+  try {
+    const snap = await getCountFromServer(query(
+      collection(db, "notifications"),
+      where("to", "==", uid),
+      where("createdAt", ">", Timestamp.fromMillis(seen)),
+      orderBy("createdAt", "desc")
+    ));
+    const n = snap.data().count;
+    ssSet(NOTI_CNT_KEY, { uid, seen, n, t: Date.now() });
+    setNotiBadge(n);
+  } catch (e) { console.warn("noti count", e); }
+}
+
+function initNotifications(me) {
+  notiMe = me;
+  refreshNotiCount();
+  if (notiBound) return;
+  notiBound = true;
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") refreshNotiCount();
+  });
+}
+
+const onHome = () => /(^|\/)(main\.html)?$/.test(location.pathname);
+
+let notiDlg = null;
+function notiDialog() {
+  if (notiDlg) return notiDlg;
+  notiDlg = document.createElement("dialog");
+  notiDlg.className = "dlg";
+  notiDlg.id = "notiDlg";
+  notiDlg.setAttribute("aria-labelledby", "notiTitle");
+  notiDlg.innerHTML = `
+    <div class="dlg-inner">
+      <header class="dlg-head">
+        <button type="button" class="icon-btn" data-close aria-label="닫기">${icon("x")}</button>
+        <h2 id="notiTitle">알림</h2>
+        <span></span>
+      </header>
+      <div class="dlg-body noti-list"></div>
+    </div>`;
+  document.body.appendChild(notiDlg);
+  wireDialog(notiDlg);
+  $(".noti-list", notiDlg).addEventListener("click", (e) => {
+    const a = e.target.closest("a.noti");
+    if (!a || !onHome()) return;
+    // 홈에 있으면 새로고침 없이 해시만 바꿔서 글을 연다 (main.js 의 hashchange)
+    e.preventDefault();
+    notiDlg.close();
+    location.hash = a.getAttribute("href").split("#")[1];
+  });
+  return notiDlg;
+}
+
+async function openNotifications() {
+  const uid = auth.currentUser?.uid;
+  if (!uid) return;
+  const dlg = notiDialog();
+  const list = $(".noti-list", dlg);
+  const seen = notiSeenAt();
+  openDialog(dlg);
+
+  let items;
+  const cached = ssGet(NOTI_LIST_KEY);
+  if (!notiCount && cached?.uid === uid && Date.now() - cached.t < NOTI_LIST_TTL) {
+    items = cached.items; // 새 알림이 없으면 다시 읽지 않음
+  } else {
+    list.innerHTML = `<div class="skel small"><span class="skel-avatar"></span><span class="skel-lines"><i></i><i></i><i></i></span></div>`.repeat(3);
+    try {
+      const snap = await getDocs(query(
+        collection(db, "notifications"), where("to", "==", uid), orderBy("createdAt", "desc"), limit(NOTI_PAGE)
+      ));
+      items = snap.docs.map((d) => {
+        const x = d.data();
+        return {
+          id: d.id, type: x.type, from: x.from, postId: x.postId, commentId: x.commentId,
+          nickname: x.nickname, handle: x.handle, text: x.text, at: toMs(x.createdAt) || Date.now(),
+        };
+      });
+      ssSet(NOTI_LIST_KEY, { uid, t: Date.now(), items });
+    } catch (e) {
+      console.error(e);
+      list.innerHTML = `<div class="empty">${icon("alert")}<b>알림을 불러오지 못했어요</b><span>${esc(errMsg(e))}</span></div>`;
+      return;
+    }
+  }
+
+  let authors = {};
+  try { authors = await getUsers(items.map((n) => n.from)); } catch {}
+  list.innerHTML = items.length
+    ? items.map((n) => notiHTML(n, authors[n.from], n.at > seen)).join("")
+    : `<div class="empty">${icon("bell")}<b>아직 알림이 없어요</b><span>내 글에 댓글이나 답글이 달리면 여기에 표시돼요.</span></div>`;
+
+  // 확인 처리: 새 알림이 있었을 때만 기록 (없으면 쓰기 0회)
+  if (notiCount || (items[0] && items[0].at > seen)) {
+    const now = Math.max(Date.now(), items[0]?.at || 0);
+    try { localStorage.setItem(NOTI_SEEN_KEY + uid, String(now)); } catch {}
+    ssSet(NOTI_CNT_KEY, { uid, seen: notiSeenAt(), n: 0, t: Date.now() });
+    setNotiBadge(0);
+    // 다른 기기와 맞추려고 users 문서에도 저장 (규칙에서 막혀도 이 기기는 localStorage 로 동작)
+    updateDoc(doc(db, "users", uid), { notiSeenAt: Timestamp.fromMillis(now) })
+      .then(() => patchCachedUser(uid, { notiSeenAt: now }))
+      .catch((e) => console.warn("notiSeenAt", e));
+  }
+}
+
+function notiHTML(n, author, unread) {
+  const name = `<b>${esc(author?.nickname || n.nickname || "알 수 없음")}</b>`;
+  const title = n.type === "reply"
+    ? `${name}님이 회원님의 댓글에 답글을 남겼어요`
+    : `${name}님이 회원님의 게시물에 댓글을 남겼어요`;
+  const href = `main.html#post-${encodeURIComponent(n.postId)}${n.commentId ? "/" + encodeURIComponent(n.commentId) : ""}`;
+  return `
+  <a class="noti ${unread ? "unread" : ""}" href="${esc(href)}">
+    <span class="noti-av">${avatarHTML(author, "sm")}<span class="noti-type ${n.type === "reply" ? "reply" : ""}">${icon(n.type === "reply" ? "reply" : "comment")}</span></span>
+    <span class="noti-main">
+      <span class="noti-head"><span class="noti-title">${title}</span><time title="${esc(fullTime(n.at))}">${timeAgo(n.at)}</time></span>
+      ${n.text ? `<span class="noti-text">${formatText(n.text)}</span>` : ""}
+    </span>
+  </a>`;
+}
+
+/** 댓글/답글을 단 뒤 받는 사람들에게 알림 생성 (쓰기 = 받는 사람 수). targets: Map<uid, "comment"|"reply"> */
+export async function sendNotifications(targets, { postId, commentId, me, text }) {
+  const uid = auth.currentUser?.uid;
+  const list = [...targets].filter(([to]) => to && to !== uid);
+  if (!list.length) return;
+  const b = writeBatch(db);
+  // TTL 정책(expireAt)을 켜 두면 30일 지난 알림은 자동 삭제 → 저장 용량 · 색인 절약
+  const expireAt = Timestamp.fromMillis(Date.now() + 30 * 24 * 60 * 60 * 1000);
+  list.forEach(([to, type]) => {
+    b.set(doc(collection(db, "notifications")), {
+      to, from: uid, type, postId, commentId,
+      nickname: me?.nickname || "", handle: me?.id || "",
+      text: String(text || "").slice(0, 80),
+      createdAt: serverTimestamp(), expireAt,
+    });
+  });
+  await b.commit();
 }
 
 /* ───────────────────────── 토스트 ───────────────────────── */
