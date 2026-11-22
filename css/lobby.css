@@ -10,7 +10,7 @@
 .lobby .col-header h1 { grid-column: auto; }
 
 .status-pill {
-  --pill: #8A88A8;
+  --pill: #6E8189;
   display: inline-flex; align-items: center; gap: 6px;
   height: 28px; padding: 0 12px; border-radius: 999px;
   font-size: 12.5px; font-weight: 750; white-space: nowrap;
@@ -47,18 +47,18 @@
   padding: 22px 14px;
   border-radius: var(--radius);
   background:
-    radial-gradient(circle at 50% 50%, rgba(176, 154, 192, .32) 0%, transparent 60%),
+    radial-gradient(circle at 50% 50%, rgba(238, 224, 201, .32) 0%, transparent 60%),
     repeating-linear-gradient(-45deg, rgba(255, 255, 255, .025) 0 10px, transparent 10px 20px),
-    #1F1E33;
-  color: #FFF3E2;
+    #3F5B6A;
+  color: #F1F0E8;
   overflow: hidden;
 }
 
 .versus-mark { display: grid; place-items: center; }
 .versus-mark span {
   font-size: 30px; font-weight: 900; font-style: italic; letter-spacing: -.02em;
-  color: #A8BDE0;
-  text-shadow: 2px 0 0 rgba(114, 145, 189, .55), -2px 0 0 rgba(230, 188, 202, .6);
+  color: #EEE0C9;
+  text-shadow: 2px 0 0 rgba(150, 182, 197, .7), -2px 0 0 rgba(238, 224, 201, .45);
 }
 
 .player-card {
@@ -73,7 +73,7 @@
   transition: border-color .2s, background .2s, box-shadow .2s;
 }
 .player-card[data-state="empty"] { border-style: dashed; background: transparent; }
-.player-card[data-me="true"] { border-color: #A8BDE0; box-shadow: 0 0 0 4px rgba(176, 154, 192, .14); }
+.player-card[data-me="true"] { border-color: #EEE0C9; box-shadow: 0 0 0 4px rgba(238, 224, 201, .14); }
 .player-card[data-state="ready"] { background: rgba(127, 200, 169, .12); border-color: #7FC8A9; }
 
 .pc-badge {
@@ -81,17 +81,17 @@
   font-size: 11px; font-weight: 900; letter-spacing: .1em;
   color: rgba(255, 255, 255, .5);
 }
-.player-card[data-me="true"] .pc-badge::after { content: " · 나"; color: #A8BDE0; letter-spacing: 0; }
+.player-card[data-me="true"] .pc-badge::after { content: " · 나"; color: #EEE0C9; letter-spacing: 0; }
 
 .pc-avatar {
   width: 84px; height: 84px; border-radius: 50%; overflow: hidden;
   display: grid; place-items: center;
-  background: linear-gradient(135deg, #FCD5CE, #B09AC0);
+  background: linear-gradient(135deg, #EEE0C9, #96B6C5);
   color: rgba(255, 255, 255, .92);
-  box-shadow: 0 0 0 3px #1F1E33, 0 0 0 5px rgba(255, 255, 255, .12);
+  box-shadow: 0 0 0 3px #3F5B6A, 0 0 0 5px rgba(255, 255, 255, .12);
 }
 .player-card[data-state="empty"] .pc-avatar { background: rgba(255, 255, 255, .06); color: rgba(255, 255, 255, .25); }
-.player-card[data-state="ready"] .pc-avatar { box-shadow: 0 0 0 3px #1F1E33, 0 0 0 5px #7FC8A9; }
+.player-card[data-state="ready"] .pc-avatar { box-shadow: 0 0 0 3px #3F5B6A, 0 0 0 5px #7FC8A9; }
 .pc-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .avatar-person { width: 72%; height: 72%; margin-top: 18%; }
 
@@ -116,7 +116,7 @@
 }
 
 .pc-action { margin-top: 4px; background: rgba(255, 255, 255, .1); color: #fff; }
-.pc-action:hover:not(:disabled) { background: #7291BD; }
+.pc-action:hover:not(:disabled) { background: #96B6C5; color: #23394A; }
 .pc-action .ic { width: 15px; height: 15px; }
 
 /* ── 안내 ───────────────────────────────── */
@@ -152,7 +152,7 @@
 .sp-avatar {
   width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
   display: grid; place-items: center;
-  background: linear-gradient(135deg, #FCD5CE, #B09AC0); color: rgba(255, 255, 255, .92);
+  background: linear-gradient(135deg, #EEE0C9, #96B6C5); color: rgba(255, 255, 255, .92);
 }
 .sp-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .sp-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

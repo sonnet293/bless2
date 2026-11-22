@@ -138,7 +138,7 @@ export function hydrateIcons(root = document) {
 export const DEFAULT_AVATAR =
   "data:image/svg+xml," +
   encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FCD5CE"/><stop offset="1" stop-color="#B09AC0"/></linearGradient></defs><rect width="64" height="64" fill="url(#g)"/><circle cx="32" cy="25" r="11" fill="#fff" fill-opacity=".9"/><path d="M12 58c2-11 10-17 20-17s18 6 20 17" fill="#fff" fill-opacity=".9"/></svg>`
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#EEE0C9"/><stop offset="1" stop-color="#96B6C5"/></linearGradient></defs><rect width="64" height="64" fill="url(#g)"/><circle cx="32" cy="25" r="11" fill="#fff" fill-opacity=".9"/><path d="M12 58c2-11 10-17 20-17s18 6 20 17" fill="#fff" fill-opacity=".9"/></svg>`
   );
 
 export const avatarSrc = (u) => u?.profileImage || DEFAULT_AVATAR;
