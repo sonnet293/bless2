@@ -1,4 +1,4 @@
-// js/common.js — 여러 페이지에서 공통으로 쓰는 것들
+// js/common.js
 import { auth, db } from "./firebase.js";
 import {
   onAuthStateChanged,
@@ -25,9 +25,8 @@ import {
   limit,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-export const APP_NAME = "UTOPIA";
+export const APP_NAME = "BLESS";
 
-/* ───────────────────────── DOM 헬퍼 ───────────────────────── */
 export const $ = (s, r = document) => r.querySelector(s);
 export const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 
@@ -40,7 +39,6 @@ export function esc(v) {
     .replace(/'/g, "&#39;");
 }
 
-/** 본문 텍스트: 이스케이프 + @아이디 강조 (줄바꿈은 CSS pre-wrap) */
 export function formatText(t) {
   return esc(t).replace(
     /(^|[\s(])@([A-Za-z0-9_.가-힣]+)/g,
@@ -73,7 +71,7 @@ export function fullTime(v) {
 
 export const fmt = (n) => Number(n || 0).toLocaleString("ko-KR");
 
-/* ───────────────────────── SVG 아이콘 ───────────────────────── */
+// SVG
 const P = {
   logo: '<path d="M12 2.5l2.2 6.3 6.3 2.2-6.3 2.2L12 19.5l-2.2-6.3L3.5 11l6.3-2.2Z"/><path d="M19 17.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8Z"/>',
   home: '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/>',
@@ -113,7 +111,6 @@ const P = {
 };
 const FILLED = { heartFill: "heart" };
 
-// 면으로 채워 그리는 아이콘 (선 없음)
 const SOLID = {
   ball: '<path d="M14.5 12a2.5 2.5 0 0 1-5 0a2.5 2.5 0 0 1 5 0m7.5 0c0 5.52-4.48 10-10 10S2 17.52 2 12S6.48 2 12 2s10 4.48 10 10m-2 0h-4c0-2.21-1.79-4-4-4s-4 1.79-4 4H4c0 4.41 3.59 8 8 8s8-3.59 8-8"/>',
 };
@@ -127,14 +124,14 @@ export function icon(name, cls = "") {
   return `<svg class="ic ${cls}" viewBox="0 0 24 24" fill="${fill ? "currentColor" : "none"}" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`;
 }
 
-/** <span data-icon="mail"></span> → SVG */
+// <span data-icon="mail"></span> → SVG
 export function hydrateIcons(root = document) {
   $$("[data-icon]", root).forEach((el) => {
     el.innerHTML = icon(el.dataset.icon);
   });
 }
 
-/* ───────────────────────── 아바타 ───────────────────────── */
+// 아바타
 export const DEFAULT_AVATAR =
   "data:image/svg+xml," +
   encodeURIComponent(
@@ -147,7 +144,6 @@ export function avatarHTML(u, size = "") {
   return `<img class="avatar ${size}" src="${esc(avatarSrc(u))}" alt="" loading="lazy" decoding="async">`;
 }
 
-// 깨진 프로필 이미지는 기본 이미지로
 document.addEventListener(
   "error",
   (e) => {
@@ -159,7 +155,7 @@ document.addEventListener(
   true
 );
 
-/* ───────────────────────── 인증 ───────────────────────── */
+// 인증
 export function requireAuth() {
   return new Promise((resolve) => {
     const off = onAuthStateChanged(auth, (user) => {
@@ -184,18 +180,13 @@ export async function logout() {
   location.replace("index.html");
 }
 
-/* ───────────────── 사용자 캐시 (Firestore 읽기 절약) ─────────────────
- * 내 정보는 users/{내 uid} 에서, 다른 사람은 공개 복사본인 profiles 에서 읽는다.
- * (users 는 본인과 GM 만 읽을 수 있음)
- * localStorage 에 10분간 캐시하고, 여러 명은 'in' 쿼리(30개씩)로 한 번에 읽는다. */
+// 사용자 캐시
 const UC_KEY = "utopia:users:v2";
 const UC_TTL = 10 * 60 * 1000;
 let uc = {};
 try { uc = JSON.parse(localStorage.getItem(UC_KEY)) || {}; } catch { uc = {}; }
 const saveUC = () => { try { localStorage.setItem(UC_KEY, JSON.stringify(uc)); } catch {} };
 
-/** 공개용 엔트리: 포켓몬 이름(name, cardName)만. 능력치 · 기술은 profiles 에 올리지 않는다.
- *  규칙(firestore.rules pubEntryOk)이 users.entry 와 같은지 앞 6마리까지 검사한다. */
 export function publicEntry(entry) {
   return (Array.isArray(entry) ? entry : []).slice(0, 6).map((p) => {
     const m = { name: p?.name ?? null };
@@ -204,7 +195,6 @@ export function publicEntry(entry) {
   });
 }
 
-/** 내 users 문서를 profiles/{uid} 에 복사. 내용이 바뀌었거나 하루가 지났을 때만 쓴다. */
 const SYNC_KEY = "utopia:profileSync:v2";
 const SYNC_TTL = 24 * 60 * 60 * 1000;
 async function syncProfile(uid, data) {
@@ -227,7 +217,6 @@ async function syncProfile(uid, data) {
 export async function getUsers(uids, { fresh = false } = {}) {
   const ids = [...new Set(uids.filter(Boolean))];
   const now = Date.now();
-  // 못 찾은 사용자(null)는 30초만 캐시 — 그 사이 로그인해서 profiles 가 생길 수 있음
   const need = ids.filter((id) => fresh || !uc[id] || now - uc[id].t > (uc[id].u ? UC_TTL : 30 * 1000));
   const myUid = auth.currentUser?.uid;
   const others = need.filter((id) => id !== myUid);
@@ -269,7 +258,6 @@ export function patchCachedUser(uid, patch) {
 export function invalidateUser(uid) { delete uc[uid]; saveUC(); }
 export function clearUserCache() { uc = {}; try { localStorage.removeItem(UC_KEY); } catch {} }
 
-/** 닉네임 / @아이디 앞부분 검색 (각 최대 6명) */
 const searchMemo = new Map();
 export async function searchUsers(term, excludeUid) {
   const t = term.trim().replace(/^@/, "");
@@ -283,7 +271,7 @@ export async function searchUsers(term, excludeUid) {
     [...a.docs, ...b.docs].forEach((d) => {
       const u = { uid: d.id, ...d.data() };
       map.set(d.id, u);
-      if (d.id !== auth.currentUser?.uid) uc[d.id] = { t: now, u }; // 내 캐시는 users 문서(PEACE 포함) 유지
+      if (d.id !== auth.currentUser?.uid) uc[d.id] = { t: now, u };
     });
     saveUC();
     searchMemo.set(t, [...map.values()]);
@@ -291,7 +279,7 @@ export async function searchUsers(term, excludeUid) {
   return searchMemo.get(t).filter((u) => u.uid !== excludeUid);
 }
 
-/* ───────────────────────── 레이아웃(사이드바 / 하단 탭) ───────────────────────── */
+// 레이아웃
 export function renderShell(active, me) {
   const items = [
     { key: "home", href: "main.html", icon: "home", label: "홈" },
@@ -323,13 +311,7 @@ export function renderShell(active, me) {
   initNotifications(me);
 }
 
-/* ───────────────────────── 알림 (댓글 · 답글) ─────────────────────────
- * notifications/{id} : { to, from, type: "comment"|"reply", postId, commentId, nickname, handle, text, createdAt, expireAt }
- * 비용 절약:
- *  - 새 알림 중 맨 위 1개만 실시간 구독(limit 1) → 페이지 열 때 읽기 1회, 새 알림 올 때마다 읽기 1회.
- *    개수는 맨 위 알림이 바뀌었을 때만 getCountFromServer(집계, 읽기 1회)로 세고 sessionStorage 에 캐시.
- *  - '읽음' 처리는 알림마다 쓰지 않고 마지막 확인 시각(notiSeenAt) 하나만 저장 (localStorage + users 문서).
- *  - 목록은 알림창을 열 때만 최대 NOTI_PAGE 개 읽고, 새 알림이 없으면 5분간 캐시를 그대로 보여준다. */
+// 알림
 const NOTI_PAGE = 20;
 const NOTI_LIST_TTL = 5 * 60 * 1000;
 const NOTI_SEEN_KEY = "utopia:notiSeen:";
@@ -338,7 +320,6 @@ const NOTI_LIST_KEY = "utopia:notiList:v1";
 let notiMe = null;
 let notiCount = 0;
 
-/** Firestore Timestamp · {seconds} (캐시된 JSON) · Date · number → ms */
 const toMs = (v) =>
   v == null ? 0
     : typeof v === "number" ? v
@@ -369,14 +350,12 @@ function setNotiBadge(n) {
 let notiUnsub = null;
 
 function notiError(e) {
-  console.error("[알림] 불러오지 못했어요:", e?.message || e);
+  console.error("[알림] 불러오지 못했습니다:", e?.message || e);
   if (String(e?.code || "").includes("failed-precondition")) {
     console.error("[알림] Firestore 색인이 필요해요. 위 메시지의 링크를 눌러 notifications (to ↑, createdAt ↓) 색인을 만들어 주세요.");
   }
 }
 
-/** 새 알림(확인 시각 이후) 중 가장 최근 1개만 실시간 구독 → 연결 시 읽기 1회, 새 알림 1개당 읽기 1회.
- *  맨 위 알림이 캐시와 같으면 개수를 다시 세지 않고, 바뀌었을 때만 집계(읽기 1회)한다. */
 function watchNotiCount() {
   const uid = auth.currentUser?.uid;
   if (!uid) return;
@@ -402,14 +381,14 @@ function watchNotiCount() {
       setNotiBadge(n);
     } catch (e) {
       notiError(e);
-      setNotiBadge(Math.max(notiCount, 1)); // 개수를 못 세도 새 알림이 있다는 건 표시
+      setNotiBadge(Math.max(notiCount, 1));
     }
   }, notiError);
 }
 
 function initNotifications(me) {
   notiMe = me;
-  const c = ssGet(NOTI_CNT_KEY); // 페이지를 옮겨도 깜빡이지 않게 직전 값을 먼저 표시
+  const c = ssGet(NOTI_CNT_KEY);
   if (c?.uid === auth.currentUser?.uid) setNotiBadge(c.n || 0);
   watchNotiCount();
 }
@@ -437,7 +416,6 @@ function notiDialog() {
   $(".noti-list", notiDlg).addEventListener("click", (e) => {
     const a = e.target.closest("a.noti");
     if (!a || !onHome()) return;
-    // 홈에 있으면 새로고침 없이 해시만 바꿔서 글을 연다 (main.js 의 hashchange)
     e.preventDefault();
     notiDlg.close();
     location.hash = a.getAttribute("href").split("#")[1];
@@ -456,7 +434,7 @@ async function openNotifications() {
   let items;
   const cached = ssGet(NOTI_LIST_KEY);
   if (!notiCount && cached?.uid === uid && Date.now() - cached.t < NOTI_LIST_TTL) {
-    items = cached.items; // 새 알림이 없으면 다시 읽지 않음
+    items = cached.items;
   } else {
     list.innerHTML = `<div class="skel small"><span class="skel-avatar"></span><span class="skel-lines"><i></i><i></i><i></i></span></div>`.repeat(3);
     try {
@@ -473,7 +451,7 @@ async function openNotifications() {
       ssSet(NOTI_LIST_KEY, { uid, t: Date.now(), items });
     } catch (e) {
       console.error(e);
-      list.innerHTML = `<div class="empty">${icon("alert")}<b>알림을 불러오지 못했어요</b><span>${esc(errMsg(e))}</span></div>`;
+      list.innerHTML = `<div class="empty">${icon("alert")}<b>알림을 불러오지 못했습니다</b><span>${esc(errMsg(e))}</span></div>`;
       return;
     }
   }
@@ -482,15 +460,13 @@ async function openNotifications() {
   try { authors = await getUsers(items.map((n) => n.from)); } catch {}
   list.innerHTML = items.length
     ? items.map((n) => notiHTML(n, authors[n.from], n.at > seen)).join("")
-    : `<div class="empty">${icon("bell")}<b>아직 알림이 없어요</b><span>내 글에 댓글이나 답글이 달리면 여기에 표시돼요.</span></div>`;
+    : `<div class="empty">${icon("bell")}<b>알림이 없습니다</b></div>`;
 
-  // 확인 처리: 새 알림이 있었을 때만 기록 (없으면 쓰기 0회)
   if (notiCount || (items[0] && items[0].at > seen)) {
     const now = Math.max(Date.now(), items[0]?.at || 0);
     try { localStorage.setItem(NOTI_SEEN_KEY + uid, String(now)); } catch {}
     setNotiBadge(0);
-    watchNotiCount(); // 새 확인 시각 기준으로 다시 구독
-    // 다른 기기와 맞추려고 users 문서에도 저장 (규칙에서 막혀도 이 기기는 localStorage 로 동작)
+    watchNotiCount();
     updateDoc(doc(db, "users", uid), { notiSeenAt: Timestamp.fromMillis(now) })
       .then(() => patchCachedUser(uid, { notiSeenAt: now }))
       .catch((e) => console.warn("notiSeenAt", e));
@@ -500,8 +476,8 @@ async function openNotifications() {
 function notiHTML(n, author, unread) {
   const name = `<b>${esc(author?.nickname || n.nickname || "알 수 없음")}</b>`;
   const title = n.type === "reply"
-    ? `${name}님이 회원님의 댓글에 답글을 남겼어요`
-    : `${name}님이 회원님의 게시물에 댓글을 남겼어요`;
+    ? `${name} 님이 댓글에 답글을 남겼어요`
+    : `${name} 님이 게시물에 댓글을 남겼어요`;
   const href = `main.html#post-${encodeURIComponent(n.postId)}${n.commentId ? "/" + encodeURIComponent(n.commentId) : ""}`;
   return `
   <a class="noti ${unread ? "unread" : ""}" href="${esc(href)}">
@@ -513,13 +489,11 @@ function notiHTML(n, author, unread) {
   </a>`;
 }
 
-/** 댓글/답글을 단 뒤 받는 사람들에게 알림 생성 (쓰기 = 받는 사람 수). targets: Map<uid, "comment"|"reply"> */
 export async function sendNotifications(targets, { postId, commentId, me, text }) {
   const uid = auth.currentUser?.uid;
   const list = [...targets].filter(([to]) => to && to !== uid);
   if (!list.length) return;
   const b = writeBatch(db);
-  // TTL 정책(expireAt)을 켜 두면 30일 지난 알림은 자동 삭제 → 저장 용량 · 색인 절약
   const expireAt = Timestamp.fromMillis(Date.now() + 30 * 24 * 60 * 60 * 1000);
   list.forEach(([to, type]) => {
     b.set(doc(collection(db, "notifications")), {
@@ -532,7 +506,7 @@ export async function sendNotifications(targets, { postId, commentId, me, text }
   await b.commit();
 }
 
-/* ───────────────────────── 토스트 ───────────────────────── */
+// 토스트
 export function toast(msg, type = "") {
   let wrap = $(".toast-wrap");
   if (!wrap) {
@@ -552,14 +526,13 @@ export function toast(msg, type = "") {
   }, 2600);
 }
 
-/* ───────────────────────── 다이얼로그 ───────────────────────── */
+// 타임라인
 export function openDialog(dlg) {
   if (!dlg.open) dlg.showModal();
 }
 export function closeDialog(dlg) {
   if (dlg.open) dlg.close();
 }
-/** 배경 클릭 · [data-close] 클릭으로 닫기 */
 export function wireDialog(dlg) {
   dlg.addEventListener("click", (e) => {
     if (e.target === dlg || e.target.closest("[data-close]")) dlg.close();
@@ -591,13 +564,13 @@ export function confirmDialog(message, { ok = "확인", danger = false } = {}) {
   });
 }
 
-/* ───────────────────────── 받는 사람 선택기 ───────────────────────── */
+// 받는 사람 선택기
 export function recipientPicker(root, { excludeUid, onChange } = {}) {
   root.classList.add("picker");
   root.innerHTML = `
     <div class="picker-input">
       ${icon("search")}
-      <input type="search" placeholder="닉네임 또는 @아이디로 검색" autocomplete="off" spellcheck="false" aria-label="받는 사람 검색">
+      <input type="search" placeholder="이름 또는 @아이디로 검색" autocomplete="off" spellcheck="false" aria-label="받는 사람 검색">
     </div>
     <ul class="picker-results" hidden></ul>
     <div class="picker-chosen" hidden></div>`;
@@ -628,20 +601,20 @@ export function recipientPicker(root, { excludeUid, onChange } = {}) {
     timer = setTimeout(async () => {
       const my = ++seq;
       list.hidden = false;
-      list.innerHTML = `<li class="picker-empty">검색 중…</li>`;
+      list.innerHTML = `<li class="picker-empty">검색 중...</li>`;
       try {
         const res = await searchUsers(term, excludeUid);
         if (my !== seq) return;
         list.innerHTML = res.length
           ? res.map((u, i) => `<li><button type="button" data-i="${i}">${avatarHTML(u, "sm")}<span class="pc-meta"><b>${esc(u.nickname)}</b><small>@${esc(u.id)}</small></span></button></li>`).join("")
-          : `<li class="picker-empty">일치하는 사람이 없어요</li>`;
+          : `<li class="picker-empty">일치하는 사람이 없습니다</li>`;
         list.onclick = (e) => {
           const b = e.target.closest("button[data-i]");
           if (b) set(res[+b.dataset.i]);
         };
       } catch (err) {
         console.error(err);
-        list.innerHTML = `<li class="picker-empty">검색하지 못했어요</li>`;
+        list.innerHTML = `<li class="picker-empty">검색하지 못했습니다</li>`;
       }
     }, 350);
   });
@@ -650,7 +623,7 @@ export function recipientPicker(root, { excludeUid, onChange } = {}) {
   return { get value() { return chosen; }, reset: () => set(null) };
 }
 
-/* 버튼 로딩 상태 */
+// 버튼 로딩 상태
 export async function withBusy(btn, fn) {
   if (btn.disabled) return;
   btn.disabled = true;
@@ -661,8 +634,8 @@ export async function withBusy(btn, fn) {
 
 export function errMsg(e) {
   const c = e?.code || "";
-  if (c.includes("permission-denied")) return "권한이 없거나 조건이 맞지 않아요.";
+  if (c.includes("permission-denied")) return "권한이 없거나 조건이 맞지 않습니다.";
   if (c.includes("unavailable") || c.includes("network")) return "네트워크 연결을 확인해 주세요.";
   if (c.includes("failed-precondition")) return "Firestore 색인이 필요해요. 콘솔(F12)의 링크를 확인해 주세요.";
-  return e?.message || "알 수 없는 오류가 발생했어요.";
+  return e?.message || "알 수 없는 오류가 발생했습니다.";
 }

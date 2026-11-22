@@ -348,7 +348,7 @@ function setReplyTo(c) {
     <span>${icon("reply")} <span class="mention">@${esc(state.replyTo.handle)}</span> 님에게 답글</span>
     ${c ? `<button type="button" class="icon-btn xs" data-cancel aria-label="답글 대상 취소">${icon("x")}</button>` : ""}`;
   const t = $("#replyText");
-  t.placeholder = c ? `@${c.handle} 님에게 답글` : "답글을 남겨보세요";
+  t.placeholder = c ? `@${c.handle} 님에게 답글` : "행복한 말을 남겨주세요";
   if (c) t.focus();
 }
 
