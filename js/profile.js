@@ -155,7 +155,7 @@ function monHTML(p, i) {
       <div><dt>HP</dt><dd>${fmt(p.hp)}</dd></div>
       <div><dt>공격</dt><dd>${fmt(p.atk)}</dd></div>
       <div><dt>방어</dt><dd>${fmt(p.def)}</dd></div>
-      <div><dt>스피드</dt><dd>${fmt(p.spd)}</dd></div>
+      <div><dt>속도</dt><dd>${fmt(p.spd)}</dd></div>
     </dl>` : ""}
     ${moves.length ? `
     <details class="moves">
