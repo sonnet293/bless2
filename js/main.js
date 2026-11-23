@@ -239,7 +239,7 @@ function bindCompose() {
         text.value = "";
         sync();
         composeDlg.close();
-        toast("게시했어요");
+        toast("BLESS!"); // "게시했어요" 대신 "BLESS!"
       } catch (err) { toast(errMsg(err), "error"); }
     });
   });

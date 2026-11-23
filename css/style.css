@@ -13,7 +13,6 @@
 
 /* 바깥 영역 (사이드바 · 하단 탭 · 로그인): 블루 미스트 */
 :root {
-  /* Background & Surface */
   --bg: #E4ECEF;
   --surface: #EDF2F4;
   --surface-2: #DCE6EA;
@@ -21,44 +20,37 @@
   --border: #C9D7DD;
   --hover: rgba(150, 182, 197, .24);
 
-  /* Text */
   --text: #2C4350;
   --text-2: #47606C;
   --muted: #607985;
 
-  /* Accent - Dusty Blue */
   --accent: #4F7A8D;
   --accent-2: #96B6C5;
   --accent-ink: #23394A;
   --accent-soft: #D3E2E9;
   --accent-glow: rgba(150, 182, 197, .45);
 
-  /* Status Colors */
-  --like: #B08550;
+  --like: #C9362A;
   --like-soft: #F3E9D8;
   --ok: #5B8F78;
-  --danger: #B9675B;
+  --danger: #E04440;
   --danger-soft: #F5E3DE;
   --gold: #A8823F;
   --badge: #5E8799;
 
-  /* Gradient */
   --grad: linear-gradient(
     135deg,
     #ADC4CE 0%,
     #96B6C5 100%
   );
 
-  /* Shadows */
   --shadow-sm: 0 1px 2px rgba(44, 67, 80, .08);
   --shadow: 0 10px 30px -10px rgba(44, 67, 80, .18);
   --shadow-lg: 0 24px 60px -18px rgba(44, 67, 80, .3);
 
-  /* Border Radius */
   --radius: 18px;
   --radius-sm: 12px;
 
-  /* Layout */
   --col: 620px;
   --side: 260px;
   --nav-h: 62px;
@@ -84,10 +76,10 @@
   --accent-soft: #E3EDF1;
   --accent-glow: rgba(150, 182, 197, .3);
 
-  --like: #B08550;
+  --like: #C9362A;
   --like-soft: #F6EDDF;
   --ok: #5B8F78;
-  --danger: #B9675B;
+  --danger: #E04440;
   --danger-soft: #F7E7E2;
   --gold: #A8823F;
 
@@ -105,6 +97,30 @@
 html { -webkit-text-size-adjust: 100%; scrollbar-gutter: stable; }
 html:has(dialog[open]) { overflow: hidden; }
 
+/* ── 스크롤바: 배경에 녹아드는 더스티 블루 알약형 ──
+   트랙은 투명, 손잡이는 테두리를 둔 알약 모양이라 가늘어 보이고
+   마우스를 올리면 포인트 색으로 짙어집니다. */
+::-webkit-scrollbar { width: 12px; height: 12px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-corner { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, #96B6C5 55%, transparent);
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
+  min-height: 40px;
+}
+::-webkit-scrollbar-thumb:hover { background-color: #96B6C5; }
+::-webkit-scrollbar-thumb:active { background-color: var(--accent); }
+
+/* Firefox 등 ::-webkit-scrollbar를 모르는 브라우저 */
+@supports not selector(::-webkit-scrollbar) {
+  html, * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, #96B6C5 65%, transparent) transparent;
+  }
+}
+
 body {
   margin: 0;
   min-height: 100dvh;
@@ -118,6 +134,7 @@ body {
   font-size: 15px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
   word-break: keep-all;
   overflow-wrap: anywhere;
 }
@@ -205,7 +222,7 @@ img { display: block; max-width: 100%; }
   padding: 12px 16px;
   border: 0; background: none;
   border-radius: 999px;
-  font-size: 17px; font-weight: 600;
+  font-size: 17px; font-weight: 500;
   color: var(--text-2);
   transition: background .15s, color .15s;
   width: 100%;
@@ -213,7 +230,7 @@ img { display: block; max-width: 100%; }
 }
 .nav-item .ic { width: 26px; height: 26px; }
 .nav-item:hover { background: var(--hover); color: var(--text); }
-.nav-item.active { color: var(--text); font-weight: 800; }
+.nav-item.active { color: var(--text); font-weight: 700; }
 .nav-item.active .ic { color: var(--accent); stroke-width: 2.3; }
 
 /* 알림(종) 버튼 + 개수 배지 */
@@ -222,7 +239,7 @@ img { display: block; max-width: 100%; }
   position: absolute; top: -6px; right: -9px;
   min-width: 19px; height: 19px; padding: 0 5px;
   display: grid; place-items: center;
-  background: var(--badge); color: #fff;
+  background: var(--danger); color: #fff;
   border: 2px solid var(--bg); border-radius: 999px;
   font-size: 10.5px; font-weight: 800; line-height: 1;
   animation: navBadgeIn .3s cubic-bezier(.2, 1.6, .4, 1);
@@ -439,7 +456,7 @@ input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
 .form-error {
   display: flex; gap: 8px; align-items: center;
   margin: 0; padding: 10px 14px;
-  background: var(--danger-soft); color: var(--danger);
+  color: var(--danger);
   border-radius: 12px; font-size: 14px; font-weight: 500;
 }
 
