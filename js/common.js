@@ -476,8 +476,8 @@ async function openNotifications() {
 function notiHTML(n, author, unread) {
   const name = `<b>${esc(author?.nickname || n.nickname || "알 수 없음")}</b>`;
   const title = n.type === "reply"
-    ? `${name} 님이 댓글에 답글을 남겼어요`
-    : `${name} 님이 게시물에 댓글을 남겼어요`;
+    ? `${name} 님이 댓글에 답글을 남겼습니다`
+    : `${name} 님이 게시물에 댓글을 남겼습니다`;
   const href = `main.html#post-${encodeURIComponent(n.postId)}${n.commentId ? "/" + encodeURIComponent(n.commentId) : ""}`;
   return `
   <a class="noti ${unread ? "unread" : ""}" href="${esc(href)}">

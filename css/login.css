@@ -14,7 +14,7 @@
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border);
-  border-radius: 28px;
+  border-radius: 25px;
   padding: 40px 28px 30px;
   box-shadow: var(--shadow-lg);
   text-align: center;
@@ -35,8 +35,8 @@
 
 .shake { animation: shake .4s ease; }
 @keyframes shake {
-  20%, 60% { transform: translateX(-6px); }
-  40%, 80% { transform: translateX(6px); }
+  20%, 60% { transform: translateX(-4px); }
+  40%, 80% { transform: translateX(4px); }
 }
 
 @media (max-width: 420px) {

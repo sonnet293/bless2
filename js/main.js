@@ -44,7 +44,7 @@ async function init() {
   $("#replyAvatar").src = avatarSrc(state.me);
   ready();
 
-  if (!state.me) toast("사용자 정보(users 문서)를 찾을 수 없어요.", "error");
+  if (!state.me) toast("사용자 정보(users 문서)를 찾을 수 없습니다.", "error");
 
   bindUI();
   await loadFeed(true);
@@ -79,14 +79,14 @@ async function loadFeed(reset = false) {
 
     if (reset) feed.innerHTML = "";
     feed.insertAdjacentHTML("beforeend", posts.map(postHTML).join(""));
-    if (reset && !posts.length) feed.innerHTML = emptyHTML("feather", "아직 글이 없어요", "오른쪽 아래 버튼으로 첫 글을 남겨보세요.");
+    if (reset && !posts.length) feed.innerHTML = emptyHTML("feather", "아직 글이 없습니다", "행복한 하루 보내셨나요? 새 글을 남겨보세요.");
 
     const done = snap.size < PAGE;
     more.hidden = done;
     $("#feedEnd").hidden = !done || !state.order.length;
   } catch (e) {
     console.error(e);
-    if (reset) feed.innerHTML = emptyHTML("alert", "글을 불러오지 못했어요", errMsg(e));
+    if (reset) feed.innerHTML = emptyHTML("alert", "글을 불러오지 못했습니다", errMsg(e));
     else toast(errMsg(e), "error");
   } finally {
     state.loading = false;
@@ -189,7 +189,7 @@ async function ensureProfile() {
   try { state.me = await getUser(state.uid, { fresh: true }); } catch {} // 캐시가 오래됐을 수 있으니 한 번 새로 읽음
   if (ok(state.me)) return true;
   const missing = ["nickname", "id"].filter((k) => !state.me?.[k]).join(", ");
-  toast(`내 users 문서에 ${missing || "nickname, id"} 필드가 없어서 글을 쓸 수 없어요.`, "error");
+  toast(`내 users 문서에 ${missing || "nickname, id"} 필드가 없어서 글을 쓸 수 없습니다.`, "error");
   return false;
 }
 
@@ -286,7 +286,7 @@ async function loadComments(id, { force = false } = {}) {
     if (state.detailId === id) renderComments();
   } catch (e) {
     console.error(e);
-    list.innerHTML = emptyHTML("alert", "댓글을 불러오지 못했어요", errMsg(e));
+    list.innerHTML = emptyHTML("alert", "댓글을 불러오지 못했습니다", errMsg(e));
   }
 }
 
@@ -295,7 +295,7 @@ function renderComments() {
   const list = $("#commentList");
   const items = state.comments.get(id)?.list || [];
   if (!items.length) {
-    list.innerHTML = emptyHTML("comment", "아직 댓글이 없어요", "첫 번째 답글을 남겨보세요.");
+    list.innerHTML = emptyHTML("comment", "아직 댓글이 없습니다", "첫 번째 답글을 남겨보세요.");
     return;
   }
   const ids = new Set(items.map((c) => c.id));
@@ -456,7 +456,7 @@ async function openFromHash() {
   if (!state.posts.has(id)) {
     try {
       const s = await getDoc(doc(db, "posts", id));
-      if (!s.exists()) return toast("삭제되었거나 없는 글이에요", "error");
+      if (!s.exists()) return toast("삭제되었거나 없는 글입니다", "error");
       const p = normalizePost({ id: s.id, ...s.data() });
       p.author = await getUser(p.uid);
       state.posts.set(id, p);
@@ -468,7 +468,7 @@ async function openFromHash() {
 /** 알림에서 온 댓글로 스크롤하고 잠깐 강조 */
 function focusComment(cid) {
   const el = $(`.comment[data-cid="${CSS.escape(cid)}"]`);
-  if (!el) return toast("삭제되었거나 없는 댓글이에요", "error");
+  if (!el) return toast("삭제되었거나 없는 댓글입니다", "error");
   el.scrollIntoView({ block: "center", behavior: "smooth" });
   el.classList.add("flash");
   setTimeout(() => el.classList.remove("flash"), 1800);
@@ -507,7 +507,7 @@ async function openInbox() {
     const senders = await getUsers(msgs.map((m) => m.from).filter(Boolean));
     list.innerHTML = msgs.length
       ? msgs.map((m) => messageHTML(m, senders[m.from])).join("")
-      : emptyHTML("inbox", "받은 쪽지가 없어요", "쪽지가 도착하면 여기에 표시돼요.");
+      : emptyHTML("inbox", "받은 쪽지가 없습니다");
 
     const unread = msgs.filter((m) => !m.read);
     if (unread.length) {
@@ -517,7 +517,7 @@ async function openInbox() {
     }
   } catch (e) {
     console.error(e);
-    list.innerHTML = emptyHTML("alert", "쪽지를 불러오지 못했어요", errMsg(e));
+    list.innerHTML = emptyHTML("alert", "쪽지를 불러오지 못했습니다", errMsg(e));
   }
 }
 
@@ -528,10 +528,10 @@ function messageHTML(m, sender) {
     ic = "ghost"; cls = "anon"; title = "익명의 쪽지";
     body = m.text;
   } else if (m.type === "flower") {
-    ic = "flower"; cls = "flower"; title = `<b>${name}</b>님이 꽃을 보냈어요`;
+    ic = "flower"; cls = "flower"; title = `<b>${name}</b> 님이 꽃을 보냈습니다`;
     body = m.text || "";
   } else if (m.type === "peace") {
-    ic = "peace"; cls = "peace"; title = `<b>${name}</b>님이 <b>${fmt(m.amount)} PEACE</b>를 보냈어요`;
+    ic = "peace"; cls = "peace"; title = `<b>${name}</b> 님이 <b>${fmt(m.amount)} PEACE</b>를 보냈습니다`;
   } else {
     ic = "mail"; cls = ""; title = "쪽지";
     body = m.text || "";

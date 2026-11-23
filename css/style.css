@@ -359,8 +359,8 @@ img { display: block; max-width: 100%; }
 .btn .ic { width: 18px; height: 18px; }
 .btn:active:not(:disabled) { transform: scale(.97); }
 .btn:disabled { opacity: .45; cursor: not-allowed; }
-.btn.primary { background: var(--grad); color: var(--accent-ink); box-shadow: 0 6px 18px -8px rgba(79, 122, 141, .45); text-shadow: 0 1px 0 rgba(255, 255, 255, .35); }
-.btn.primary:hover:not(:disabled) { box-shadow: 0 10px 24px -8px rgba(79, 122, 141, .55); }
+.btn.primary { background: var(--grad); color: var(--accent-ink); box-shadow: 0 4px 12px -6px rgba(79, 122, 141, .20); text-shadow: 0 1px 0 rgba(255, 255, 255, .35); }
+.btn.primary:hover:not(:disabled) { box-shadow: 0 6px 16px -7px rgba(79, 122, 141, .28); }
 .btn.ghost { background: transparent; border-color: var(--border); }
 .btn.ghost:hover:not(:disabled) { background: var(--hover); }
 .btn.danger { background: var(--danger); color: #fff; }
@@ -411,7 +411,13 @@ img { display: block; max-width: 100%; }
   transition: border-color .15s, background .15s;
 }
 .input-wrap:focus-within { border-color: var(--accent); background: var(--surface); }
-.input-wrap > .ic, .input-wrap > [data-icon] .ic, .input-wrap > span > .ic { width: 19px; height: 19px; color: var(--muted); }
+.input-wrap > .ic,
+.input-wrap > [data-icon] .ic,
+.input-wrap > span > .ic {
+    width: 19px;
+    height: 19px;
+    color: var(--muted);
+}
 .input-wrap input {
   flex: 1; min-width: 0; height: 100%;
   border: 0; outline: 0; background: transparent; font-size: 15px;
