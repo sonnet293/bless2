@@ -3,17 +3,17 @@ export const ROOMS = [
     {
         id: "battleroom1",
         no: 1,
-        name: "1번 방",
+        name: "나하시",
     },
     {
         id: "battleroom2",
         no: 2,
-        name: "2번 방",
+        name: "아담",
     },
     {
         id: "battleroom3",
         no: 3,
-        name: "3번 방",
+        name: "이브",
     },
 ];
 

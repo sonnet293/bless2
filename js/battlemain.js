@@ -40,7 +40,7 @@ for (const info of ROOMS) {
     const pill = el("span", "status-pill");
     pill.append(el("span", "status-dot"), el("span", "status-label", "불러오는 중"));
     visual.append(pill);
-    const mine = el("span", "room-mine", "내 방");
+    const mine = el("span", "room-mine", "복귀");
     mine.hidden = true;
     visual.append(mine);
 

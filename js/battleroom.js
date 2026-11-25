@@ -186,16 +186,16 @@ function render() {
 
     // 안내 문구
     let hint = "";
-    if (!room) hint = "GM이 아직 방을 열지 않았어요. 잠시 후 다시 시도해 주세요.";
-    else if (mySlot && !hasEntry) hint = "엔트리가 비어 있어요. 프로필에서 포켓몬을 먼저 등록해 주세요.";
+    if (!room) hint = "방이 열리지 않았습니다.";
+    else if (mySlot && !hasEntry) hint = "엔트리가 비어있습니다. 블래키 괄진에게 문의해주세요.";
     else if (mySlot) {
         const both = PLAYER_SLOTS.every((s) => room[`${s}_uid`]);
         const allReady = PLAYER_SLOTS.every((s) => room[`${s}_ready`]);
-        if (!both) hint = "상대가 들어오기를 기다리는 중이에요.";
-        else if (allReady) hint = "모두 준비 완료! GM이 배틀을 시작하는 중…";
-        else if (iAmReady) hint = "상대가 READY를 누르면 배틀이 시작돼요.";
+        if (!both) hint = "상대를 기다리는 중...";
+        else if (allReady) hint = "모두 준비 완료, SYSTEM SUCCESS://";
+        else if (iAmReady) hint = "모두 READY를 눌러주세요.";
         else hint = "준비가 되면 READY를 눌러 주세요.";
-    } else if (amSpectator) hint = "관전 중이에요. 배틀이 시작되면 자동으로 관전 화면으로 이동해요.";
+    } else if (amSpectator) hint = "관전 중";
     ui.hint.textContent = hint;
     ui.hint.dataset.tone = !room || (mySlot && !hasEntry) ? "warn" : "";
 }
@@ -216,7 +216,7 @@ function renderSwap(req, mySlot) {
 
     if (req.toUid === myUid && mySlot === req.slot) {
         box.dataset.tone = "incoming";
-        text.innerHTML = `${icon("refresh")}<span><b></b>님이 내 자리와 교체를 요청했어요</span>`;
+        text.innerHTML = `${icon("refresh")}<span><b></b> 님이 내 자리와 교체를 요청했어요</span>`;
         text.querySelector("b").textContent = req.fromName ?? "관전자";
         actions.append(
             actionBtn("거절", "ghost", () => clearSwap()),
@@ -224,7 +224,7 @@ function renderSwap(req, mySlot) {
         );
     } else if (req.fromUid === myUid) {
         box.dataset.tone = "outgoing";
-        text.innerHTML = `${icon("refresh")}<span><b></b>님에게 자리 교체를 요청했어요</span>`;
+        text.innerHTML = `${icon("refresh")}<span><b></b> 님에게 자리 교체를 요청했어요</span>`;
         text.querySelector("b").textContent = toName;
         actions.append(actionBtn("요청 취소", "ghost", () => clearSwap()));
     } else {
@@ -252,7 +252,7 @@ function renderSpectators() {
     ui.specList.replaceChildren();
 
     if (!ids.length) {
-        ui.specList.append(el("li", "spectator-empty", "아직 관전자가 없어요"));
+        ui.specList.append(el("li", "spectator-empty", "아직 관전자가 없습니다"));
         return;
     }
     ids.forEach((uid, i) => {
