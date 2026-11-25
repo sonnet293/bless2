@@ -636,7 +636,7 @@ export async function withBusy(btn, fn) {
 export function errMsg(e) {
   const c = e?.code || "";
   if (c.includes("permission-denied")) return "권한이 없거나 조건이 맞지 않습니다.";
-  if (c.includes("unavailable") || c.includes("network")) return "네트워크 연결을 확인해 주세요.";
+  if (c.includes("unavailable") || c.includes("network")) return "네트워크 연결을 확인해주세요.";
   if (c.includes("failed-precondition")) return "Firestore 색인이 필요해요. 콘솔(F12)의 링크를 확인해 주세요.";
   return e?.message || "알 수 없는 오류가 발생했습니다.";
 }

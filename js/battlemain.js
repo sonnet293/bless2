@@ -68,8 +68,10 @@ function makeSeat(label) {
     const avatar = el("span", "seat-avatar");
     fillAvatar(avatar);
     const meta = el("span", "seat-meta");
-    meta.append(el("span", "seat-label", label), el("span", "seat-name", "빈 자리"));
-    seat.append(avatar, meta, el("span", "seat-ready"));
+    const head = el("span", "seat-head");
+    head.append(el("span", "seat-label", label), el("span", "seat-ready"));
+    meta.append(head, el("span", "seat-name", "빈 자리"));
+    seat.append(avatar, meta);
     return seat;
 }
 

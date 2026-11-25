@@ -128,13 +128,15 @@
 .seat-name { font-size: 14.5px; font-weight: 750; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .seat[data-empty="true"] .seat-name { color: var(--muted); font-weight: 600; }
 
+.seat-head { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.seat:last-child .seat-head { flex-direction: row-reverse; }
+
 .seat-ready {
-  position: absolute; top: -8px; right: 8px;
-  padding: 1px 7px; border-radius: 999px;
-  font-size: 10.5px; font-weight: 900; letter-spacing: .06em;
+  flex-shrink: 0;
+  padding: 0 6px; border-radius: 999px;
+  font-size: 10px; font-weight: 900; letter-spacing: .06em; line-height: 1.5;
   background: #7FC8A9; color: #fff;
 }
-.seat:last-child .seat-ready { right: auto; left: 8px; }
 .seat-ready:empty { display: none; }
 .seat-ready[data-tag="win"] { background: var(--gold); }
 
@@ -174,5 +176,5 @@
   .room-seats { grid-template-columns: 1fr; gap: 6px; }
   .room-vs { justify-self: center; }
   .seat:last-child { flex-direction: row; text-align: left; }
-  .seat:last-child .seat-ready { left: auto; right: 8px; }
+  .seat:last-child .seat-head { flex-direction: row; }
 }
