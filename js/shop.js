@@ -245,7 +245,11 @@ async function sendAnon(to, text) {
   const b = writeBatch(db);
   b.update(invRef(), { anon: increment(-1), lastTxn: msg.id });
   b.set(msg, { type: "anon", to: to.uid, text, createdAt: serverTimestamp(), read: false });
-  b.set(doc(db, "anonLogs", msg.id), { from: state.uid, to: to.uid, text, createdAt: serverTimestamp() });
+  b.set(doc(db, "anonLogs", msg.id), {
+    from: state.uid, fromNickname: state.me?.nickname ?? null,
+    to: to.uid, toNickname: to.nickname ?? null,
+    text, createdAt: serverTimestamp(),
+  });
   await b.commit();
   toast(`${to.nickname}님에게 익명 쪽지를 보냈어요`);
 }

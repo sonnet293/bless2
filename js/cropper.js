@@ -19,7 +19,7 @@ export async function cropImage(file, size = 400) {
       <div class="dlg-inner">
         <div class="dlg-head">
           <button class="icon-btn" type="button" data-act="cancel" aria-label="취소">${icon("x")}</button>
-          <h2>사진 자르기</h2>
+          <h2>자르기</h2>
           <span></span>
         </div>
         <div class="crop-body">
@@ -32,7 +32,6 @@ export async function cropImage(file, size = 400) {
             <input type="range" min="1" max="${MAX_ZOOM}" step="0.01" value="1" aria-label="확대">
             <button class="icon-btn sm" type="button" data-act="in" aria-label="확대">${icon("plus")}</button>
           </div>
-          <p class="crop-hint">드래그해서 위치를 옮기고, 확대해서 크기를 맞추세요</p>
         </div>
         <div class="dlg-foot">
           <button class="btn ghost" type="button" data-act="cancel">취소</button>
@@ -169,7 +168,7 @@ async function exportCrop(img, cx, cy, side, size) {
   const blob =
     (await toBlob(canvas, "image/webp", 0.86)) ||
     (await toBlob(canvas, "image/jpeg", 0.88));
-  if (!blob) throw new Error("이미지를 변환하지 못했어요.");
+  if (!blob) throw new Error("이미지를 변환하지 못했습니다");
   return blob;
 }
 
@@ -178,7 +177,7 @@ function loadImage(file) {
     const url = URL.createObjectURL(file);
     const img = new Image();
     img.onload = () => resolve(img); // url 은 다이얼로그를 닫을 때 해제
-    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("이미지를 읽을 수 없어요.")); };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("이미지를 읽을 수 없습니다")); };
     img.src = url;
   });
 }

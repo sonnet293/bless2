@@ -191,6 +191,7 @@ export function publicEntry(entry) {
   return (Array.isArray(entry) ? entry : []).slice(0, 6).map((p) => {
     const m = { name: p?.name ?? null };
     if (p?.cardName != null) m.cardName = p.cardName;
+    if (p?.type != null) m.type = p.type;
     return m;
   });
 }
