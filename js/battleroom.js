@@ -149,7 +149,7 @@ function render() {
         c.card.dataset.state = !uid ? "empty" : isReady ? "ready" : "waiting";
         c.card.dataset.me = String(!!uid && uid === myUid);
         c.name.textContent = name ?? "빈 자리";
-        c.state.textContent = !uid ? "참가자를 기다리는 중" : isReady ? "READY" : "준비 중";
+        c.state.textContent = !uid ? "참가자를 기다리는 중" : isReady ? "READY" : "대기 중";
 
         if (c.avatar.dataset.uid !== (uid ?? "")) {
             c.avatar.dataset.uid = uid ?? "";
