@@ -115,6 +115,11 @@ function boardPlaying() {
   return boardBusy || boardQueue.length > 0;
 }
 
+// 전투 종료를 화면에 보여줘도 되는지: 승자가 정해졌고, 마지막 쓰러짐까지 연출이 다 끝났을 때만
+function battleEndShown(room) {
+  return !!room?.battle_winner && !boardPlaying();
+}
+
 // 지금 내가 이번 라운드 행동(기술/교체)을 고를 수 있는지
 function canChoose(room) {
   const myKey = slotKey(mySlot);
@@ -211,7 +216,7 @@ async function leaveBattle() {
     return;
   }
   const alreadyReset = sawBattle && !latestRoom.game_started;
-  if (!latestRoom.battle_winner && !alreadyReset) return;
+  if (!battleEndShown(latestRoom) && !alreadyReset) return;
 
   leaveInFlight = true;
   if (alreadyReset) {
@@ -231,7 +236,7 @@ function renderLeaveButton(room) {
   if (!btn) return;
   if (room.game_started) sawBattle = true;
   const isSpectator = !slotKey(mySlot);
-  const canLeave = isSpectator || !!room.battle_winner || (sawBattle && !room.game_started);
+  const canLeave = isSpectator || battleEndShown(room) || (sawBattle && !room.game_started);
   btn.style.display = canLeave ? "inline-block" : "none";
   btn.onclick = () => {
     playButtonSound();
@@ -564,7 +569,11 @@ function typeLogLine(text, onDone) {
 function processBoardQueue() {
   if (boardBusy) return;
   if (boardQueue.length === 0) {
-    if (latestRoom) renderTurnUI(latestRoom); // 연출이 다 끝났으면 다음 라운드 행동 선택 버튼을 활성화
+    if (latestRoom) {
+      renderTurnUI(latestRoom); // 연출이 다 끝났으면 다음 라운드 행동 선택 버튼을 활성화
+      renderResult(latestRoom); // 마지막 연출까지 끝난 뒤에 승패/LEAVE 표시
+      renderLeaveButton(latestRoom);
+    }
     return;
   }
   boardBusy = true;
@@ -725,7 +734,7 @@ function renderLogAndBoard(room) {
 function renderTurn(room) {
   const el = document.getElementById("turn-indicator");
   if (room.battle_winner) {
-    el.innerText = "배틀 종료";
+    el.innerText = boardPlaying() ? "" : "배틀 종료";
     return;
   }
 
@@ -769,7 +778,7 @@ function renderTurn(room) {
 
 function renderResult(room) {
   const el = document.getElementById("result");
-  if (!room.battle_winner) {
+  if (!battleEndShown(room)) {
     el.innerText = "";
     return;
   }

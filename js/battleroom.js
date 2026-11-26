@@ -1,7 +1,4 @@
-// js/battleroom.js — 배틀룸 대기실 (pages/battleroom{n}.html)
-// 입장하면 빈 자리가 있으면 플레이어로, 없거나 배틀 중이면 관전자로 들어간다.
-// 양쪽 READY → GM(gm/gm.js)이 게임을 시작하면(game_started) 배틀 화면(games/battleroom{n}.html)으로 이동한다.
-// 대기실에서 바꾸는 값은 로비 필드(playerN_uid/name/ready, spectators, spectator_names, swap_request)뿐이다.
+// js/battleroom.js
 import { auth, db } from "./firebase.js";
 import { onAuthStateChanged }
 from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -29,8 +26,8 @@ let myUid = null;
 let myName = "Trainer";
 let hasEntry = true;
 let room = null;
-let joined = false;   // 입장 처리를 한 번 했는지
-let busy = false;     // 버튼 요청 중
+let joined = false;
+let busy = false;
 let leaving = false;
 
 const el = (tag, className, text) => {
@@ -45,7 +42,7 @@ const isSpectator = (r, uid) => (r?.spectators ?? []).includes(uid);
 
 hydrateIcons();
 
-/* ───────────────────────── 플레이어 카드 뼈대 ───────────────────────── */
+// 카드 뼈대
 const cards = PLAYER_SLOTS.map((slot, i) => {
     const card = $(`#${slot}`);
     const badge = el("span", "pc-badge", `P${i + 1}`);
@@ -61,7 +58,7 @@ const cards = PLAYER_SLOTS.map((slot, i) => {
     return { slot, card, avatar, name, state, action };
 });
 
-/* ───────────────────────── 시작 ───────────────────────── */
+// 시작
 onAuthStateChanged(auth, async (user) => {
     if (!user) {
         location.replace("../index.html");
@@ -88,7 +85,6 @@ onAuthStateChanged(auth, async (user) => {
 async function onRoom(snap) {
     room = snap.exists() ? snap.data() : null;
 
-    // 게임이 시작되면 배틀 화면으로 (관전자는 관전 모드로)
     if (room?.game_started && (slotOf(room, myUid) || isSpectator(room, myUid))) {
         location.replace(slotOf(room, myUid) ? GAME_URL : `${GAME_URL}?spectator=true`);
         return;
@@ -108,7 +104,6 @@ async function onRoom(snap) {
     ready();
 }
 
-// 빈 자리 → 플레이어, 아니면 관전자로 입장 (이미 들어와 있으면 그대로)
 function joinRoom() {
     return runTransaction(db, async (tx) => {
         const r = (await tx.get(roomRef)).data();
@@ -129,7 +124,7 @@ function joinRoom() {
     });
 }
 
-/* ───────────────────────── 그리기 ───────────────────────── */
+// 그리기
 function render() {
     const status = roomStatus(room);
     ui.status.dataset.status = status.key;
@@ -156,7 +151,7 @@ function render() {
             fillAvatar(c.avatar, { uid, label: name ?? "" });
         }
 
-        // 관전자: 빈 자리에 앉기 / 플레이어에게 자리 교체 요청
+        // 관전자 액션
         let act = null;
         if (lobbyOpen && amSpectator) {
             if (!uid) act = "sit";
@@ -166,7 +161,7 @@ function render() {
         if (act) {
             c.action.dataset.act = act;
             c.action.innerHTML = act === "sit"
-                ? `${icon("plus")}<span>이 자리에 앉기</span>`
+                ? `${icon("plus")}<span>이 자리로 교체</span>`
                 : `${icon("refresh")}<span>교체 요청</span>`;
             c.action.disabled = busy;
         }
@@ -175,7 +170,7 @@ function render() {
     renderSwap(req, mySlot);
     renderSpectators();
 
-    // READY 버튼 (플레이어만)
+    // READY 버튼
     const iAmReady = !!(mySlot && room?.[`${mySlot}_ready`]);
     ui.ready.hidden = !mySlot || !lobbyOpen;
     ui.ready.disabled = busy || !hasEntry;
@@ -192,9 +187,9 @@ function render() {
         const both = PLAYER_SLOTS.every((s) => room[`${s}_uid`]);
         const allReady = PLAYER_SLOTS.every((s) => room[`${s}_ready`]);
         if (!both) hint = "상대를 기다리는 중...";
-        else if (allReady) hint = "모두 준비 완료, SYSTEM SUCCESS://";
+        else if (allReady) hint = "모두 준비 완료.";
         else if (iAmReady) hint = "모두 READY를 눌러주세요.";
-        else hint = "준비가 되면 READY를 눌러 주세요.";
+        else hint = "준비가 되면 READY를 눌러주세요.";
     } else if (amSpectator) hint = "관전 중";
     ui.hint.textContent = hint;
     ui.hint.dataset.tone = !room || (mySlot && !hasEntry) ? "warn" : "";
@@ -216,7 +211,7 @@ function renderSwap(req, mySlot) {
 
     if (req.toUid === myUid && mySlot === req.slot) {
         box.dataset.tone = "incoming";
-        text.innerHTML = `${icon("refresh")}<span><b></b> 님이 내 자리와 교체를 요청했어요</span>`;
+        text.innerHTML = `${icon("refresh")}<span><b></b> 님이 교체를 요청했습니다</span>`;
         text.querySelector("b").textContent = req.fromName ?? "관전자";
         actions.append(
             actionBtn("거절", "ghost", () => clearSwap()),
@@ -224,7 +219,7 @@ function renderSwap(req, mySlot) {
         );
     } else if (req.fromUid === myUid) {
         box.dataset.tone = "outgoing";
-        text.innerHTML = `${icon("refresh")}<span><b></b> 님에게 자리 교체를 요청했어요</span>`;
+        text.innerHTML = `${icon("refresh")}<span><b></b> 님에게 교체를 요청했습니다</span>`;
         text.querySelector("b").textContent = toName;
         actions.append(actionBtn("요청 취소", "ghost", () => clearSwap()));
     } else {
@@ -252,7 +247,7 @@ function renderSpectators() {
     ui.specList.replaceChildren();
 
     if (!ids.length) {
-        ui.specList.append(el("li", "spectator-empty", "아직 관전자가 없습니다"));
+        ui.specList.append(el("li", "spectator-empty", "관전자 없음"));
         return;
     }
     ids.forEach((uid, i) => {
@@ -266,7 +261,7 @@ function renderSpectators() {
     });
 }
 
-/* ───────────────────────── 동작 ───────────────────────── */
+// 동작
 async function run(fn) {
     if (busy) return;
     busy = true;
@@ -289,7 +284,7 @@ ui.ready.addEventListener("click", () => run(async () => {
 }));
 
 ui.leave.addEventListener("click", () => run(async () => {
-    if (slotOf(room, myUid) && !(await confirmDialog("방에서 나갈까요?", { ok: "나가기" }))) return;
+    if (slotOf(room, myUid) && !(await confirmDialog("방에서 나가시겠습니까?", { ok: "나가기" }))) return;
     leaving = true;
     if (room) await vacateSeat(roomRef, room, myUid);
     location.href = "../battle.html";
@@ -300,12 +295,11 @@ function onSeatAction(slot, act) {
     if (act === "swap") run(() => requestSwap(slot));
 }
 
-// 관전자 → 빈 자리로 이동
 function sitDown(slot) {
     return runTransaction(db, async (tx) => {
         const r = (await tx.get(roomRef)).data();
         const idx = (r?.spectators ?? []).indexOf(myUid);
-        if (!r || r.game_started || r[`${slot}_uid`] || idx === -1) throw new Error("이미 다른 사람이 앉았어요.");
+        if (!r || r.game_started || r[`${slot}_uid`] || idx === -1) throw new Error("이미 다른 사람이 앉았습니다.");
         tx.update(roomRef, {
             [`${slot}_uid`]: myUid,
             [`${slot}_name`]: myName,
@@ -316,7 +310,6 @@ function sitDown(slot) {
     });
 }
 
-// 관전자 → 플레이어에게 자리 교체 요청
 async function requestSwap(slot) {
     const toUid = room?.[`${slot}_uid`];
     if (!toUid || room.swap_request) return;
@@ -329,7 +322,6 @@ function clearSwap() {
     return updateDoc(roomRef, { swap_request: deleteField() });
 }
 
-// 플레이어(요청 받은 사람)가 수락: 요청한 관전자와 자리를 맞바꾼다
 function acceptSwap() {
     return runTransaction(db, async (tx) => {
         const r = (await tx.get(roomRef)).data();

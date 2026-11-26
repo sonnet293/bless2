@@ -17,7 +17,7 @@ import {
 const ITEMS = {
   anon: {
     name: "익명 쪽지", price: 5, icon: "ghost",
-    desc: "받는 사람을 지정해 이름을 숨긴 쪽지를 보내요. 누가 보냈는지는 사이트 어디에도 표시되지 않아요.",
+    desc: "받는 사람을 지정해 이름을 숨긴 쪽지를 보내요.",
     use: "쪽지 쓰기",
   },
   shard: {

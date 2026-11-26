@@ -69,7 +69,7 @@ export function applyStatus(pokemon, statusName, currentTurn) {
   }
   // 신비의부적: 지속되는 동안 상태이상에 걸리지 않음. amulet: { expireTurn }
   if (pokemon.amulet && currentTurn <= pokemon.amulet.expireTurn) {
-    return { pokemon, applied: false, reason: "amulet", message: `${name}${josa(name, "은는")} 신비의 베일에 보호받고 있다!` };
+    return { pokemon, applied: false, reason: "amulet", message: `${name}${josa(name, "은는")} 신비의부적에 둘러싸여 있다!` };
   }
 
   const statusData = {
