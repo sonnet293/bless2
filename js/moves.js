@@ -233,6 +233,7 @@ export const MOVES = {
   "용해액":   { power: 30, type: "독", accuracy: 100, alwaysHit: false, effect: null,
                 rank: { chance: 0.1, targetDef: -1, turns: 2 }, aoeEnemy: true },
   "독침":     { power: 30, type: "독", accuracy: 100, alwaysHit: false, effect: { chance: 0.3, status: "독" } },
+  "셸암즈":     { power: 60, type: "독", accuracy: 100, alwaysHit: false, effect: { chance: 0.1, status: "독" } },
   "독찌르기": { power: 50, type: "독", accuracy: 100, alwaysHit: false, effect: { chance: 0.3, status: "독" } },
   "독가루":   { power: 0,  type: "독", accuracy: 75,  alwaysHit: false, targetSelf: false,
                 effect: { chance: 1, status: "독" }, poisonPowder: true },
