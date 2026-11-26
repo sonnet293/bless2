@@ -462,11 +462,15 @@ const LOG_MAX_LINES = 8;
 const LOG_TYPE_CHAR_MS = 18; // 한 글자 타이핑 간격
 const LOG_TYPE_GAP_MS = 80; // 한 스텝 끝난 후 다음 스텝 시작 전 여백
 const HIT_DELAY_MS = 350; // 로그 타이핑이 끝난 뒤 피격 연출이 시작되기까지의 텀
+const MULTI_HIT_GAP_MS = 120; // 연속기: 2타째부터 앞 타격이 끝나고 다음 타격까지의 텀
 const HIT_PUSH_MS = 300; // 피격자가 밀려났다 돌아오는 시간
 const HIT_BLINK_MS = 600; // 포트레이트 깜빡임 3번에 걸리는 시간
 const HP_DRAIN_MS = 550; // HP바가 줄어드는 시간 (battle.css .hp-bar transition과 맞춤)
 const DICE_HOLD_MS = 900; // 주사위 결과를 보여주는 시간
-const ATK_DICE_GAP_MS = 500; // 선공 주사위가 끝나고 공격 주사위가 뜨기까지의 텀
+const ATK_DICE_GAP_MS = 300; // "~의 기술!" 줄이 뜨고 공격 주사위가 뜨기까지의 텀
+const FAINT_MS = 380; // 쓰러짐: 포트레이트가 가라앉으며 사라지는 시간 (battle.css .faint-out과 맞춤)
+const RECALL_MS = 220; // 교체로 돌아갈 때 포트레이트가 사라지는 시간 (battle.css .recall-out과 맞춤)
+const SEND_OUT_MS = 240; // 새 포켓몬이 나타나는 시간 (battle.css .send-out과 맞춤)
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -513,6 +517,34 @@ async function playHitAnimation(side, pkmn, idx, info = {}) {
 
 let renderedLogCount = 0; // 지금까지 큐에 반영한 로그 줄 수
 let renderedEventCount = 0; // 지금까지 큐에 반영한 연출 이벤트 수
+// 쓰러짐/돌아옴/내보냄 연출: portrait-wrap에 클래스를 붙이고 끝날 때까지 기다림
+const EXIT_CLASSES = ["faint-out", "recall-out"];
+function portraitWrap(side) {
+  return document.querySelector(`#${side}-pokemon-area .portrait-wrap`);
+}
+async function playExit(side, cls, ms) {
+  const wrap = portraitWrap(side);
+  if (!wrap) return;
+  wrap.classList.remove("send-out", ...EXIT_CLASSES);
+  replayClass(wrap, cls); // forwards로 사라진 채 유지 → 다음 내보냄 때 해제
+  await wait(ms);
+}
+async function playSendOut(side) {
+  const wrap = portraitWrap(side);
+  if (!wrap) return;
+  wrap.classList.remove(...EXIT_CLASSES);
+  replayClass(wrap, "send-out");
+  await wait(SEND_OUT_MS);
+  wrap.classList.remove("send-out");
+}
+// "~는 쓰러졌다!" 줄이 어느 쪽 포켓몬인지: 화면상 HP가 0인 쪽 (양쪽 다 0이면 이름으로 구분)
+function faintSide(text) {
+  const sides = ["mine", "enemy"].filter((s) => shownPokemon[s] && shownPokemon[s].hp <= 0 &&
+    !portraitWrap(s)?.classList.contains("faint-out"));
+  if (sides.length <= 1) return sides[0] ?? null;
+  return sides.find((s) => shownPokemon[s].name && text.startsWith(shownPokemon[s].name)) ?? sides[0];
+}
+
 let boardInitialized = false; // 최초 진입/재접속 시엔 연출 없이 즉시 표시
 let boardQueue = []; // { kind: "dice", mineRoll, enemyRoll } | { kind: "atkDice", rolls } | { kind: "log", text } | { kind: "hit"|"switch", side, pkmn, idx, hasAttacker? } | { kind: "status", side, status } | { kind: "heal", side, hp }
 let boardBusy = false;
@@ -584,7 +616,17 @@ function processBoardQueue() {
   };
 
   if (step.kind === "log") {
-    typeLogLine(step.text, next);
+    typeLogLine(step.text, () => {
+      if (!step.faint) { next(); return; }
+      const side = faintSide(step.text);
+      if (side) playExit(side, "faint-out", FAINT_MS).then(next);
+      else next();
+    });
+    return;
+  }
+
+  if (step.kind === "recall") {
+    playExit(step.side, "recall-out", RECALL_MS).then(next);
     return;
   }
 
@@ -595,7 +637,7 @@ function processBoardQueue() {
   }
 
   if (step.kind === "atkDice") {
-    // 공격 기술의 1d10. 선공 주사위가 끝난 뒤 잠깐 쉬고, "~의 기술!" 줄과 피격 연출보다 먼저 재생
+    // 공격 기술의 1d10. "~의 기술!" 줄이 뜬 뒤 잠깐 쉬고, 피격 연출보다 먼저 재생
     wait(ATK_DICE_GAP_MS).then(() => playAttackDice(step.rolls)).then(next);
     return;
   }
@@ -604,7 +646,7 @@ function processBoardQueue() {
     // 로그가 다 보인 뒤 잠깐 텀 → 밀려남 → 깜빡 3번 → HP바 감소
     // 기술 공격이면 텀 동안 배경 터미널에 공격 로그부터 띄움
     if (step.hasAttacker) document.dispatchEvent(new CustomEvent("battle:attack"));
-    wait(HIT_DELAY_MS).then(() => playHitAnimation(step.side, step.pkmn, step.idx, step)).then(next);
+    wait(step.delay ?? HIT_DELAY_MS).then(() => playHitAnimation(step.side, step.pkmn, step.idx, step)).then(next);
     return;
   }
 
@@ -631,7 +673,7 @@ function processBoardQueue() {
   if (step.kind === "switch") {
     updatePortrait(step.side, step.pkmn);
     applyPokemonVisual(step.side, step.pkmn, step.idx);
-    next();
+    playSendOut(step.side).then(next);
     return;
   }
 
@@ -673,6 +715,7 @@ function renderLogAndBoard(room) {
     renderedLogCount = log.length;
     renderedEventCount = events.length;
 
+    ["mine", "enemy"].forEach((s) => portraitWrap(s)?.classList.remove("send-out", ...EXIT_CLASSES));
     applyPokemonVisual("mine", minePkmn, mineIdx);
     updatePortrait("mine", minePkmn);
     applyPokemonVisual("enemy", enemyPkmn, enemyIdx);
@@ -699,12 +742,19 @@ function renderLogAndBoard(room) {
       if (ev.logIndex !== absoluteIdx || ev.type !== "dice") continue;
       boardQueue.push({ kind: "dice", mineRoll: ev[mineKey], enemyRoll: ev[enemyKey] });
     }
-    // 공격 1d10 주사위도 그 줄("~의 기술!")보다 먼저 재생
+    boardQueue.push({ kind: "log", text, faint: text.endsWith("쓰러졌다!") });
+
+    // 공격 1d10 주사위는 그 줄("~의 기술!")이 뜬 다음, 피격 연출보다 먼저 재생
     for (const ev of newEvents) {
       if (ev.logIndex !== absoluteIdx || ev.type !== "hit" || !ev.rolls?.length) continue;
       boardQueue.push({ kind: "atkDice", rolls: ev.rolls });
     }
-    boardQueue.push({ kind: "log", text });
+
+    // "돌아와, ~!" 줄: 바로 다음 줄의 교체 이벤트로 어느 쪽인지 판단해서 돌아가는 연출
+    if (text.startsWith("돌아와,")) {
+      const sw = newEvents.find((ev) => ev.logIndex === absoluteIdx + 1 && ev.type === "switch");
+      if (sw && sideMap[sw.side]) boardQueue.push({ kind: "recall", side: sideMap[sw.side] });
+    }
 
     for (const ev of newEvents) {
       if (ev.logIndex !== absoluteIdx) continue;
@@ -716,14 +766,30 @@ function renderLogAndBoard(room) {
         // 피격 시점의 상태이상(ev.status)을 써야, 뒤에 걸릴 상태이상이 미리 표시되지 않음
         const hitPkmn = { ...finalPkmn, hp: ev.hp };
         if ("status" in ev) hitPkmn.status = ev.status;
-        boardQueue.push({ kind: "hit", side, pkmn: hitPkmn, idx, hasAttacker: ev.hasAttacker, typeMult: ev.typeMult, crit: ev.crit });
+        if (ev.hitHps?.length > 1) {
+          // 연속기: 타격마다 피격 연출 + HP 감소를 따로 재생
+          ev.hitHps.forEach((hp, n) => {
+            boardQueue.push({
+              kind: "hit", side, pkmn: { ...hitPkmn, hp }, idx, typeMult: ev.typeMult,
+              hasAttacker: ev.hasAttacker && n === 0, // 배경 터미널 공격 로그는 첫 타에만
+              crit: ev.crit && n === ev.hitHps.length - 1,
+              delay: n === 0 ? HIT_DELAY_MS : MULTI_HIT_GAP_MS,
+            });
+          });
+        } else {
+          boardQueue.push({ kind: "hit", side, pkmn: hitPkmn, idx, hasAttacker: ev.hasAttacker, typeMult: ev.typeMult, crit: ev.crit });
+        }
       } else if (ev.type === "heal") {
         boardQueue.push({ kind: "heal", side, hp: ev.hp });
       } else if (ev.type === "status") {
         boardQueue.push({ kind: "status", side, status: ev.status });
       } else if (ev.type === "switch") {
-        const finalPkmn = side === "mine" ? minePkmn : enemyPkmn;
-        boardQueue.push({ kind: "switch", side, pkmn: finalPkmn, idx: ev.idx });
+        // 교체 시점의 HP/상태로 그려야 함 (최종 HP를 쓰면 상대 공격 로그보다 HP가 먼저 닳아 보임)
+        const sideKey = side === "mine" ? mineKey : enemyKey;
+        const switchedPkmn = { ...(room[`${sideKey}_entry`]?.[ev.idx] ?? (side === "mine" ? minePkmn : enemyPkmn)) };
+        if ("hp" in ev) switchedPkmn.hp = ev.hp;
+        if ("status" in ev) switchedPkmn.status = ev.status;
+        boardQueue.push({ kind: "switch", side, pkmn: switchedPkmn, idx: ev.idx });
       }
     }
   });

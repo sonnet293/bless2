@@ -175,21 +175,21 @@ body::after {
 
 @keyframes pushMine {
   0%, 100% { transform: translateX(0); }
-  35% { transform: translateX(-14px); }
+  35% { transform: translateX(-20px); }
 }
 @keyframes pushEnemy {
   0%, 100% { transform: translateX(0); }
-  35% { transform: translateX(14px); }
+  35% { transform: translateX(20px); }
 }
 /* 피격 순간 화면(하얀 박스) 전체 흔들림 */
 .battle-page.screen-shake { animation: screenShake .35s ease-out; }
 @keyframes screenShake {
   0%, 100% { transform: translate(0, 0); }
-  15% { transform: translate(-8px, 3px); }
-  30% { transform: translate(7px, -3px); }
-  45% { transform: translate(-5px, 2px); }
-  60% { transform: translate(4px, -1px); }
-  80% { transform: translate(-2px, 0); }
+  15% { transform: translate(-14px, 5px); }
+  30% { transform: translate(12px, -5px); }
+  45% { transform: translate(-9px, 3px); }
+  60% { transform: translate(6px, -2px); }
+  80% { transform: translate(-3px, 1px); }
 }
 
 @keyframes hitBlink {
@@ -200,6 +200,28 @@ body::after {
 .portrait-img.fainted {
   filter: grayscale(1);
   opacity: .5;
+}
+
+/* 쓰러짐/교체로 돌아감: 하얗게 빛나며 사라짐 (쓰러짐은 살짝 가라앉음). 사라진 채 유지
+   내보냄: 하얀 실루엣으로 나타났다가 원래 색으로 돌아옴 */
+.portrait-wrap.faint-out { animation: faintOut .38s ease-in forwards; }
+.portrait-wrap.recall-out { animation: recallOut .22s ease-in forwards; }
+.portrait-wrap.send-out { animation: sendOut .24s ease-out; }
+
+@keyframes faintOut {
+  0% { transform: translateY(0); opacity: 1; filter: none; }
+  35% { transform: translateY(4px); opacity: 1; filter: brightness(0) invert(1); }
+  100% { transform: translateY(14px); opacity: 0; filter: brightness(0) invert(1); }
+}
+@keyframes recallOut {
+  0% { opacity: 1; filter: none; }
+  40% { opacity: 1; filter: brightness(0) invert(1); }
+  100% { opacity: 0; filter: brightness(0) invert(1); }
+}
+@keyframes sendOut {
+  0% { opacity: 0; filter: brightness(0) invert(1); }
+  45% { opacity: 1; filter: brightness(0) invert(1); }
+  100% { opacity: 1; filter: none; }
 }
 
 /* ---- HP 박스: [이름  HP: n / n] / [바] ---- */

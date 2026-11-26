@@ -28,7 +28,8 @@ export const MOVES = {
   "할퀴기":     { power: 30, type: "노말", accuracy: 100, alwaysHit: false, effect: null },
   "몸통박치기": { power: 30, type: "노말", accuracy: 100, alwaysHit: false, effect: null },
   "하이퍼보이스":{ power: 50, type: "노말", accuracy: 100, alwaysHit: false, effect: null, aoeEnemy: true },
-  "속이기":     { power: 30, type: "노말", accuracy: 70,  alwaysHit: false, effect: null, fakeOut: true },
+  // 속이기(fakeOut): 필드에 나온 뒤 첫 라운드에만 성공 (그 뒤에 쓰면 반드시 실패). 선제 순위 3, 맞으면 반드시 풀죽음.
+  "속이기":     { power: 30, type: "노말", accuracy: 100, alwaysHit: false, effect: { chance: 1, volatile: "풀죽음" }, fakeOut: true, priority: 3 },
   "성장":       { power: 0,  type: "노말", accuracy: 100, alwaysHit: true,  effect: null,
                   rank: { atk: 1, turns: 2 } },
   "야금야금":   { power: 40, type: "노말", accuracy: 100, alwaysHit: false, skipEvasion: true, effect: null },
@@ -156,6 +157,7 @@ export const MOVES = {
   "볼트체인지":   { power: 40, type: "전기", accuracy: 100, alwaysHit: false, effect: null, uTurn: true },
   "찌리리따끔따끔":   { power: 50, type: "전기", accuracy: 100, alwaysHit: false, effect: { chance: 0.3, volatile: "풀죽음" } },
   "와일드볼트":{ power: 60, type: "전기", accuracy: 100, alwaysHit: false, effect: { recoil: 0.25 } },
+  "파라볼라차지": { power: 50, type: "전기", accuracy: 100, alwaysHit: false, effect: { drain: 0.15 } },
 
   // ───── 풀 ─────
   "에너지볼":       { power: 40, type: "풀", accuracy: 100, alwaysHit: false, effect: null,

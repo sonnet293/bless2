@@ -875,6 +875,11 @@ export function useMove(room, myKey, moveIdx, uTurnIdx = null) {
       log.push(`${faint.name}${josa(faint.name, "은는")} 쓰러졌다!`);
       directPendingSides.add(myKey);
     }
+  } else if (moveData.fakeOut && currentTurn !== (attacker.fieldTurn ?? 1)) {
+    // 속이기: 필드에 나온 뒤 첫 라운드(fieldTurn)가 아니면 반드시 실패 (선봉은 1라운드)
+    const attackerName = currentAttacker.name ?? "포켓몬";
+    log.push(`${attackerName}의 ${moveSlot.name}!`);
+    log.push("그러나 실패했다!");
   } else if ((moveData.ghostDive || moveData.dig) && !diving) {
     // 고스트다이브/구멍파기/뛰어오르기 1턴째: 공격하지 않고 사라짐. 다음 내 턴에 같은 기술로 강제 공격.
     // 구멍파기(underground)는 땅속에 있는 동안 지진류(hitsUnderground)에는 맞음
@@ -1117,7 +1122,7 @@ export function useMove(room, myKey, moveIdx, uTurnIdx = null) {
             furyCutterHit = true;
           }
 
-          // 연속 공격(multiHit: { min, max, fixedDamage? }): min~max회 중 랜덤으로 때림. 매 타격마다 1d10/급소를 따로 판정하고,
+          // 연속 공격(multiHit: { min, max, fixedDamage? }): min~max회 중 랜덤으로 때림. 1d10은 기술 한 번에 한 번만 굴려 모든 타격에 쓰고(급소는 타격마다 판정),
           // 상대가 도중에 쓰러지면 멈춤. fixedDamage가 있으면 타격당 고정 데미지 (타입상 효과가 없으면 0)
           // 카운터: 직전에 받은 데미지 x1.5를 고정 데미지로 돌려줌 (급소/랭크/장막 무관, 타입상 효과가 없으면 0)
           const counterDmg = moveData.counter ? Math.round((attacker.lastDamageTaken ?? 0) * COUNTER_MULT) : null;
@@ -1130,7 +1135,8 @@ export function useMove(room, myKey, moveIdx, uTurnIdx = null) {
           let newHp = updatedDefender.hp;
           let dmg = 0; // 이번 기술로 준 총 데미지
           let hits = 0;
-          const rolls = []; // 실제로 굴린 공격 1d10 (클라이언트가 피격 연출 전에 주사위로 보여줌)
+          const rolls = []; // 실제로 굴린 공격 1d10 (클라이언트가 피격 연출 전에 주사위로 보여줌). 연속기도 한 번만 굴림
+          const hitHps = []; // 타격마다 맞은 뒤의 HP (클라이언트가 1타, 2타... 나눠서 피격 연출)
           let anyCrit = false; // 한 번이라도 급소에 맞았는지 (배경 터미널 연출용)
           while (hits < hitCount && newHp > 0) {
             let hitDmg;
@@ -1140,8 +1146,8 @@ export function useMove(room, myKey, moveIdx, uTurnIdx = null) {
             } else if (multiHit?.fixedDamage) {
               hitDmg = typeMult === 0 ? 0 : multiHit.fixedDamage;
             } else {
-              const roll = rollD10();
-              rolls.push(roll);
+              if (rolls.length === 0) rolls.push(rollD10());
+              const roll = rolls[0];
               const rawDamage = moveData.bodyPress
                 ? bodyPressRawDamage(power, attacker, defender, rankMultiplier(getEffectiveRank(myRanks, "def", currentTurn)), defMult, typeMult, stab, roll)
                 : (power + atkStat * 4 + roll) * dmgAtkMult * typeMult * stab * weatherMult -
@@ -1152,6 +1158,7 @@ export function useMove(room, myKey, moveIdx, uTurnIdx = null) {
             newHp = Math.max(0, newHp - hitDmg);
             dmg += hitDmg;
             hits++;
+            hitHps.push(newHp);
             if (isCrit && hitDmg > 0) { log.push("급소에 맞았다!"); anyCrit = true; }
             if (typeMult === 0) break;
           }
@@ -1161,6 +1168,7 @@ export function useMove(room, myKey, moveIdx, uTurnIdx = null) {
           updatedDefender = { ...updatedDefender, hp: newHp, lastHitRound: currentTurn, lastDamageTaken: dmg };
           const hitEvent = { logIndex: moveLogIndex, type: "hit", side: oppKey, hp: newHp, status: defender.status ?? null, hasAttacker: true };
           if (rolls.length > 0) hitEvent.rolls = rolls;
+          if (multiHit && hitHps.length > 1) hitEvent.hitHps = hitHps;
           hitEvent.typeMult = typeMult;
           if (anyCrit) hitEvent.crit = true;
           events.push(hitEvent);
@@ -1529,12 +1537,15 @@ function switchIn(room, myKey, entries, activeIdx, targetIdx, log, events, updat
   update[`${myKey}_active_idx`] = targetIdx;
   update[`${myKey}_ranks`] = defaultRanks(); // 교체하면 랭크 초기화
 
+  // 들어온 포켓몬이 처음 행동할 수 있는 라운드 (교체/유턴/울부짖기/쓰러진 뒤 교체 모두 이번 라운드엔 행동 못 함) - 속이기 판정용
+  myArr[targetIdx] = { ...myArr[targetIdx], fieldTurn: (room.round_no ?? 1) + 1 };
   const target = myArr[targetIdx];
   const pName = displayName(myKey, room);
   const dn = target.name ?? "포켓몬";
   if (recall) log.push(`돌아와, ${prevPkmn?.name ?? "포켓몬"}!`);
   log.push(`${pName}${josa(pName, "은는")} ${dn}${josa(dn, "을를")} 내보냈다!`);
-  events.push({ logIndex: log.length - 1, type: "switch", side: myKey, idx: targetIdx });
+  // 들어온 시점의 HP/상태를 함께 남겨서, 클라이언트가 이후 피격 결과(최종 HP)를 미리 보여주지 않게 함
+  events.push({ logIndex: log.length - 1, type: "switch", side: myKey, idx: targetIdx, hp: target.hp, status: target.status ?? null });
 
   // 장판(스텔스록/독압정) 효과 적용
   const myField = room[`${myKey}_field`] ?? defaultField();

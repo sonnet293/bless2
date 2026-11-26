@@ -220,12 +220,13 @@ function playVs(done) {
 
   later(() => glitchBurst(1.6), 1500)
   later(() => glitchBurst(1.2), 2300)
-  later(() => overlay.classList.add("is-out"), 3300)
+  later(() => glitchBurst(1.2), 3000)
+  later(() => overlay.classList.add("is-out"), 4000)
   later(() => {
     stopFx()
     overlay.classList.add("hidden")
     done()
-  }, 3800)
+  }, 4500)
 }
 
 /* ═══════════════════════════ 진행 (터치 · 동기화) ═══════════════════════════ */
