@@ -12,7 +12,7 @@ import {
   serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { MOVES } from "./moves.js";
-import { formatPokemonName } from "./effecthandler.js";
+import { formatPokemonName, josa } from "./effecthandler.js";
 import { displayName, isMoveLocked, isRecharging, isChoosePhase } from "./engine.js";
 import { vacateSeat } from "./roomLeave.js";
 import { portraitUrl } from "./portrait.js";
@@ -92,7 +92,7 @@ function sendAction(type, payload = {}) {
       });
       noticeTimer = setTimeout(() => {
         const el = document.getElementById("turn-indicator");
-        if (el) el.innerText = "GM 응답 대기 중...";
+        if (el) el.innerText = "서버 응답 대기 중...";
       }, GM_WAIT_NOTICE_MS);
       const unsub = onSnapshot(ref, (snap) => {
         const action = snap.data();
@@ -195,7 +195,7 @@ function switchPokemon(targetIdx) {
   const myKey = slotKey(mySlot);
   if (latestRoom?.[`${myKey}_pending_switch`]) return requestTurnAction("switch", { targetIdx });
   const name = latestRoom?.[`${myKey}_entry`]?.[targetIdx]?.name ?? "포켓몬";
-  return requestTurnAction("choose", { kind: "switch", targetIdx }, { text: `${name}(으)로 교체` });
+  return requestTurnAction("choose", { kind: "switch", targetIdx }, { text: `${name}${josa(name, "으로")} 교체` });
 }
 
 // 전투 종료 후 LEAVE 버튼 클릭 시: GM이 내 슬롯을 비우고 전투 필드를 초기화하면 메인으로 이동.
@@ -264,7 +264,7 @@ function renderBoard(room) {
 function renderTurnUI(room) {
   if (!canChoose(room)) uTurnPick = null; // 고를 수 없는 상태가 되면 유턴 교체 대상 선택 취소
   renderTurn(room);
-  if (uTurnPick !== null) document.getElementById("turn-indicator").innerText = "유턴 후 교체할 포켓몬을 선택!";
+  if (uTurnPick !== null) document.getElementById("turn-indicator").innerText = "교체할 포켓몬을 선택!";
   renderMoveButtons(room);
   renderBench(room);
 }
@@ -773,7 +773,8 @@ function renderTurn(room) {
     el.innerText = "선택 전송 중...";
     return;
   }
-  el.innerText = "기술을 선택하세요!";
+  const activeName = room[`${myKey}_entry`]?.[room[`${myKey}_active_idx`] ?? 0]?.name ?? "포켓몬";
+  el.innerText = `${activeName}${josa(activeName, "은는")} 무엇을 할까?`;
 }
 
 function renderResult(room) {

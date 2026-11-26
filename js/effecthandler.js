@@ -24,7 +24,7 @@ export function josa(word, type) {
   if (type === "이가") return hasFinal ? "이" : "가";
   if (type === "을를") return hasFinal ? "을" : "를";
   if (type === "과와") return hasFinal ? "과" : "와";
-  if (type === "으로") return hasFinal ? "으로" : "로";
+  if (type === "으로") return hasFinal && (code - 0xAC00) % 28 !== 8 ? "으로" : "로"; // ㄹ 받침은 "로"
   return "";
 }
 

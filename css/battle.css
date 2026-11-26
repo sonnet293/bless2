@@ -401,7 +401,8 @@ body::after {
 }
 
 #battle-log {
-  height: 120px;
+  height: 120px; /* 최소 높이 겸 기준값 */
+  flex: 1 0 auto; /* 패널이 왼쪽 칸 높이만큼 늘어나면 남는 공간을 로그가 채움 */
   padding: 6px 12px 8px;
   font-size: 14px;
   line-height: 1.5;

@@ -250,12 +250,12 @@ function applyRoost(pokemon, currentTurn) {
   const n = pokemon.name ?? "포켓몬";
   return {
     pokemon: { ...pokemon, roost: { expireTurn: currentTurn + ROOST_TURNS - 1 } },
-    message: `${n}의 비행 타입이 사라졌다!`,
+    message: `${n}의 비행타입이 사라졌다!`,
   };
 }
 
 function roostEndMessage(name) {
-  return `${name}의 비행 타입이 돌아왔다!`;
+  return `${name}의 비행타입이 돌아왔다!`;
 }
 
 // 파괴광선류(hyperBeam): 맞히면 다음 라운드엔 반동으로 행동 불가. recharge: { turn: 행동할 수 없는 라운드 }
@@ -264,7 +264,7 @@ export function isRecharging(pokemon, currentTurn) {
 }
 
 function rechargeMessage(name) {
-  return `${name}${josa(name, "은는")} 공격의 반동으로 움직일 수 없다!`;
+  return `${name}${josa(name, "은는")} 반동으로 움직일 수 없다!`;
 }
 
 // 씨뿌리기: 심은 라운드부터 2라운드에 한 번(심은 다음 라운드, 그 2라운드 뒤...) 라운드 종료 시
@@ -541,7 +541,7 @@ function buildTurnAdvanceUpdate(room, entries, activeIdx, currentTurn, log, even
     if (!pkmn?.amulet || currentTurn < pkmn.amulet.expireTurn) continue;
     entries[side][activeIdx[side]] = { ...pkmn, amulet: null };
     const n = pkmn.name ?? "포켓몬";
-    log.push(`${n}${josa(n, "을를")} 감싸던 신비의 베일이 사라졌다!`);
+    log.push(`${n}${josa(n, "을를")} 감싸던 신비의부적이 사라졌다!`);
   }
 
   // 도발 만료: 마지막 라운드 종료 시 해제
@@ -550,7 +550,7 @@ function buildTurnAdvanceUpdate(room, entries, activeIdx, currentTurn, log, even
     if (!pkmn?.taunt || currentTurn < pkmn.taunt.expireTurn) continue;
     entries[side][activeIdx[side]] = { ...pkmn, taunt: null };
     const n = pkmn.name ?? "포켓몬";
-    log.push(`${n}의 도발 효과가 풀렸다!`);
+    log.push(`${n}의 도발이 풀렸다!`);
   }
 
   // 지옥찌르기 만료: 마지막 라운드 종료 시 해제
@@ -787,11 +787,11 @@ export function useMove(room, myKey, moveIdx, uTurnIdx = null) {
   // 거대해머류(heavyHammer): 사용한 다음 라운드에는 같은 기술을 쓸 수 없음
   if (!diving && !recharging && isMoveLocked(attacker, moveSlot.name, currentTurn)) {
     if (isThroatChopped(attacker, currentTurn) && SOUND_MOVES.has(moveSlot.name)) {
-      return fail(`지옥찌르기 효과로 ${moveSlot.name}은(는) 사용할 수 없음`);
+      return fail(`지옥찌르기 효과로 ${moveSlot.name}${josa(moveSlot.name, "은는")} 사용할 수 없음`);
     }
     return fail(isTaunted(attacker, currentTurn)
-      ? `도발 상태라 ${moveSlot.name}은(는) 사용할 수 없음`
-      : `${moveSlot.name}은(는) 이번 라운드에 사용할 수 없음`);
+      ? `도발 상태라 ${moveSlot.name}${josa(moveSlot.name, "은는")} 사용할 수 없음`
+      : `${moveSlot.name}${josa(moveSlot.name, "은는")} 이번 라운드에 사용할 수 없음`);
   }
 
   // 유턴: 공격과 교체가 한 세트. 교체할 수 있는 벤치가 있으면 교체 대상을 함께 받아야 함.
@@ -920,7 +920,7 @@ export function useMove(room, myKey, moveIdx, uTurnIdx = null) {
     } else {
       currentAttacker = { ...currentAttacker, amulet: { expireTurn: currentTurn + AMULET_TURNS } };
       entries[myKey][activeIdx[myKey]] = currentAttacker;
-      log.push(`${attackerName}${josa(attackerName, "은는")} 신비의 베일에 둘러싸였다!`);
+      log.push(`${attackerName}${josa(attackerName, "은는")} 신비의부적에 둘러싸여 있다!`);
     }
   } else if (moveData.aquaRing) {
     // 아쿠아링: 라운드 종료마다 최대 체력의 1/16 회복. 이미 두르고 있으면 실패.
