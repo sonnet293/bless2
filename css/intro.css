@@ -249,6 +249,9 @@ body:has(#select-overlay) #intro-overlay { display: none; }
   .vs-p2 { justify-self: end; align-self: start; text-align: right; max-width: 100%; }
   .vs-mark { justify-self: center; }
   .vs-name { font-size: clamp(28px, 11vw, 56px); }
+  /* 위아래로 쌓인 배치라 흔들림은 좌우로: p1은 왼쪽, p2는 오른쪽 먼저 */
+  @keyframes driftDown { from { translate: 0 0; } to { translate: -40px 0; } }
+  @keyframes driftUp   { from { translate: 0 0; } to { translate: 40px 0; } }
   .intro-vs::before { height: 20%; }
   .intro-log { font-size: 10.5px; padding: 12px; }
 }
