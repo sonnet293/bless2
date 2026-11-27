@@ -1714,8 +1714,9 @@ export function resolveRound(room, choices) {
   if (p1Switch !== p2Switch) {
     // 한쪽만 교체: 교체가 먼저 (다이스 없음)
     order = p1Switch ? ["p1", "p2"] : ["p2", "p1"];
-  } else if (p1Priority !== p2Priority) {
+  } else if (p1Priority !== p2Priority && !(p1Priority > 0 && p2Priority > 0)) {
     // 둘 다 기술인데 선제 순위(priority)가 다름: 높은 쪽이 먼저 (다이스/선공 로그 없음)
+    // 단, 양쪽 다 선제기(priority > 0)면 순위 차이와 상관없이 아래의 속도 판정으로 넘어간다
     order = p1Priority > p2Priority ? ["p1", "p2"] : ["p2", "p1"];
   } else {
     const { first, r1, r2 } = decideFirst(p1Active, p2Active, room.p1_ranks, room.p2_ranks, room.round_no ?? 1);

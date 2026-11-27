@@ -1,5 +1,5 @@
 // moves.js
-// priority: 선제 순위(기본 0). 싱글배틀에서 두 쪽 다 기술을 쓰면 priority가 높은 쪽이 다이스 없이 먼저 행동한다 (교체는 여전히 기술보다 먼저).
+// priority: 선제 순위(기본 0). 싱글배틀에서 두 쪽 다 기술을 쓰면 priority가 높은 쪽이 다이스 없이 먼저 행동한다 (교체는 여전히 기술보다 먼저). 양쪽 다 priority > 0이면 순위 차이와 상관없이 평소 속도 판정을 한다.
 export const MOVES = {
   // ───── 랭크 전용 기술 ─────
   "칼춤":     { power: 0, type: "노말", accuracy: 100, alwaysHit: true, effect: null,
